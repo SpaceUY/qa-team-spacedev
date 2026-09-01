@@ -197,7 +197,7 @@ successfully, or the error if it failed. No silent failures.
 - Report file not found, or no "Bug Register" section / no rows →
   stop, tell the user, create nothing.
 - No sprint List's date range covers today → ask the user to pick a
-  destination List manually (do not guess).
+  sprint List manually for association (do not guess).
 - Individual ticket creation/attachment/tag failure → continue with
   the rest of the batch, surface the failure in the final report.
 - ClickUp MCP not connected / tools unavailable → stop immediately
