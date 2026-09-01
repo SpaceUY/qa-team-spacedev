@@ -93,8 +93,8 @@ export function findSharedEvidenceFile(reportDir) {
   if (imageFiles.length === 0) return null;
 
   imageFiles.sort((a, b) => {
-    const numA = parseInt(a.match(LEADING_NUMBER_RE)?.[1] ?? 'Infinity', 10);
-    const numB = parseInt(b.match(LEADING_NUMBER_RE)?.[1] ?? 'Infinity', 10);
+    const numA = a.match(LEADING_NUMBER_RE) ? parseInt(a.match(LEADING_NUMBER_RE)[1], 10) : Infinity;
+    const numB = b.match(LEADING_NUMBER_RE) ? parseInt(b.match(LEADING_NUMBER_RE)[1], 10) : Infinity;
     if (numA !== numB) return numA - numB;
     return a.localeCompare(b);
   });

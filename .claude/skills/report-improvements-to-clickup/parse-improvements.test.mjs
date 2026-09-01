@@ -140,3 +140,20 @@ test('findSharedEvidenceFile returns null when no image files exist', () => {
   rmSync(dir, { recursive: true, force: true });
   assert.equal(result, null);
 });
+
+test('findSharedEvidenceFile sorts unnumbered files to the end, not the front', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'qa-evidence-'));
+  writeFileSync(join(dir, '01-a.png'), '');
+  writeFileSync(join(dir, '03-b.png'), '');
+  writeFileSync(join(dir, '05-c.png'), '');
+  writeFileSync(join(dir, 'logo.png'), '');
+  const result = findSharedEvidenceFile(dir);
+  rmSync(dir, { recursive: true, force: true });
+  assert.equal(result, '01-a.png');
+});
+
+test('findSharedEvidenceFile returns null for a nonexistent directory', () => {
+  const dir = join(tmpdir(), 'qa-evidence-does-not-exist-' + Date.now());
+  const result = findSharedEvidenceFile(dir);
+  assert.equal(result, null);
+});
