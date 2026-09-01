@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseReportHeader, inferPlatform, inferEnvironment, inferPage, parseNiceToHave, findSharedEvidenceFile, buildImprovementTitle, buildImprovementDescription, findActiveSprint } from './parse-improvements.mjs';
+import { parseReportHeader, inferPlatform, inferEnvironment, inferPage, parseNiceToHave, findSharedEvidenceFile, buildImprovementTitle, buildImprovementDescription, findActiveSprint, buildImprovementTickets } from './parse-improvements.mjs';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -211,4 +211,63 @@ test('findActiveSprint ignores an entry with malformed dates and still finds the
     { id: '2', name: 'Sprint 14', startDate: '2026-08-29', endDate: '2026-09-11' },
   ];
   assert.deepEqual(findActiveSprint(sprints, '2026-09-01'), { id: '2', name: 'Sprint 14' });
+});
+
+test('buildImprovementTickets combines parsing, inference, and building end-to-end', () => {
+  const md = `
+# QA Report — Register Flow
+
+**Date:** 2026-03-26
+**URL:** https://staging.otonomi.ai/register
+
+## Recommended Actions
+### Nice to Have
+- Add eye icon on login, password field
+`;
+  const sprintLists = [{ id: '9', name: 'Sprint 14', startDate: '2026-08-29', endDate: '2026-09-11' }];
+  const result = buildImprovementTickets({
+    markdownText: md,
+    reportPath: 'evidence/staging-otonomi-ai/register/2026-03-26/qa-report.md',
+    sprintLists,
+    today: '2026-09-01',
+    reporterName: 'Julia Disarli',
+    priority: 'Low',
+    severity: 'Low',
+    evidenceFile: '01-initial-load.png',
+  });
+
+  assert.deepEqual(result, {
+    sprintListId: '9',
+    sprintListName: 'Sprint 14',
+    evidenceFile: '01-initial-load.png',
+    warnings: [],
+    tickets: [
+      {
+        title: '[Improvement] Web | Staging | Register | Add eye icon on login, password field',
+        description: [
+          'In Scope:',
+          'Add eye icon on login, password field',
+          '',
+          'Additional information:',
+          'Reported by: Julia Disarli',
+          'Priority: Low',
+          'Severity: Low',
+        ].join('\n'),
+      },
+    ],
+  });
+});
+
+test('buildImprovementTickets surfaces a parse error without throwing', () => {
+  const result = buildImprovementTickets({
+    markdownText: '# QA Report — Empty\n\n**Date:** 2026-03-26\n**URL:** https://x.com\n',
+    reportPath: 'evidence/x/root/2026-03-26/qa-report.md',
+    sprintLists: [],
+    today: '2026-09-01',
+    reporterName: 'Julia Disarli',
+    priority: 'Low',
+    severity: 'Low',
+    evidenceFile: null,
+  });
+  assert.deepEqual(result, { error: 'No "Nice to Have" subsection found under Recommended Actions.' });
 });

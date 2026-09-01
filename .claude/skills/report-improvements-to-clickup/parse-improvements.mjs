@@ -130,3 +130,82 @@ export function findActiveSprint(sprintLists, today) {
   }
   return { id: match.id, name: match.name };
 }
+
+export function buildImprovementTickets({ markdownText, reportPath, sprintLists, today, reporterName, priority, severity, evidenceFile }) {
+  const headerResult = parseReportHeader(markdownText);
+  if (headerResult.error) return headerResult;
+
+  const niceToHaveResult = parseNiceToHave(markdownText);
+  if (niceToHaveResult.error) return niceToHaveResult;
+
+  const sprintResult = findActiveSprint(sprintLists, today);
+  if (sprintResult.error) return sprintResult;
+
+  const platform = inferPlatform(headerResult, reportPath);
+  const environment = inferEnvironment(headerResult.url);
+  const page = inferPage(reportPath);
+
+  const tickets = niceToHaveResult.improvements.map((improvement) => ({
+    title: buildImprovementTitle(improvement, platform, environment, page),
+    description: buildImprovementDescription(improvement, reporterName, priority, severity),
+  }));
+
+  return {
+    sprintListId: sprintResult.id,
+    sprintListName: sprintResult.name,
+    evidenceFile: evidenceFile ?? null,
+    tickets,
+    warnings: niceToHaveResult.warnings || [],
+  };
+}
+
+function runCli() {
+  const [, , reportPathArg, ...rest] = process.argv;
+  const flags = Object.fromEntries(
+    rest
+      .filter((arg) => arg.startsWith('--'))
+      .map((arg) => {
+        const [key, ...valueParts] = arg.slice(2).split('=');
+        return [key, valueParts.join('=')];
+      })
+  );
+
+  if (!reportPathArg) {
+    console.log(JSON.stringify({ error: 'Usage: node parse-improvements.mjs <report-path> --sprints=<json> --today=<YYYY-MM-DD> --reporter="<name>" [--priority=<value>] [--severity=<value>]' }));
+    process.exitCode = 1;
+    return;
+  }
+
+  let markdownText;
+  try {
+    markdownText = fs.readFileSync(reportPathArg, 'utf8');
+  } catch (err) {
+    console.log(JSON.stringify({ error: `Could not read report file: ${err.message}` }));
+    process.exitCode = 1;
+    return;
+  }
+
+  let sprintLists = [];
+  try {
+    sprintLists = flags.sprints ? JSON.parse(flags.sprints) : [];
+  } catch (err) {
+    console.log(JSON.stringify({ error: `Invalid --sprints JSON: ${err.message}` }));
+    process.exitCode = 1;
+    return;
+  }
+
+  const today = flags.today || new Date().toISOString().slice(0, 10);
+  const reporterName = flags.reporter || 'Unknown QA';
+  const priority = flags.priority || 'Low';
+  const severity = flags.severity || 'Low';
+  const evidenceFile = findSharedEvidenceFile(path.dirname(reportPathArg));
+
+  const result = buildImprovementTickets({ markdownText, reportPath: reportPathArg, sprintLists, today, reporterName, priority, severity, evidenceFile });
+  console.log(JSON.stringify(result));
+  if (result.error) process.exitCode = 1;
+}
+
+// Only run the CLI when this file is executed directly (not when imported by tests).
+if (import.meta.url === `file://${process.argv[1]}`) {
+  runCli();
+}
