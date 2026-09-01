@@ -3,14 +3,19 @@ import fs from 'node:fs';
 
 const SEVERITY_ICONS = { '🔴': 'High', '🟡': 'Medium', '🟢': 'Low' };
 
+// Returns { severity, unrecognized } — unrecognized is true when the cell didn't match
+// a known icon or plain High/Medium/Low word, so the caller can warn without fabricating a value.
 function stripSeverityIcon(cell) {
   const trimmed = cell.trim();
   for (const [icon, name] of Object.entries(SEVERITY_ICONS)) {
-    if (trimmed.startsWith(icon)) return name;
+    if (trimmed.startsWith(icon)) return { severity: name, unrecognized: false };
   }
   // Fallback: cell may already be a plain severity word.
-  if (['High', 'Medium', 'Low'].includes(trimmed)) return trimmed;
-  return trimmed;
+  if (['High', 'Medium', 'Low'].includes(trimmed)) return { severity: trimmed, unrecognized: false };
+  // Unrecognized icon/word: strip a leading emoji-like icon (if present) so the reported
+  // value is just the word, without inventing a High/Medium/Low value that wasn't there.
+  const withoutIcon = trimmed.replace(/^\p{Extended_Pictographic}️?\s*/u, '').trim();
+  return { severity: withoutIcon || trimmed, unrecognized: true };
 }
 
 function splitRow(line) {
@@ -18,8 +23,8 @@ function splitRow(line) {
     .trim()
     .replace(/^\|/, '')
     .replace(/\|$/, '')
-    .split('|')
-    .map((cell) => cell.trim());
+    .split(/(?<!\\)\|/)
+    .map((cell) => cell.trim().replace(/\\\|/g, '|'));
 }
 
 export function parseBugRegister(markdownText) {
@@ -45,15 +50,23 @@ export function parseBugRegister(markdownText) {
 
   // Data rows start two lines after the header (header, separator, then data).
   const bugs = [];
+  const warnings = [];
   for (let i = headerIdx + 2; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line.startsWith('|')) break; // table ended
     const cells = splitRow(line);
-    if (cells.length < 4) continue;
+    if (cells.length < 4) {
+      warnings.push(`Skipped malformed row: "${line}"`);
+      continue;
+    }
     const [id, severityCell, description, evidence] = cells;
+    const { severity, unrecognized } = stripSeverityIcon(severityCell);
+    if (unrecognized) {
+      warnings.push(`Unrecognized severity "${severity}" for row ${id} — expected High, Medium, or Low`);
+    }
     bugs.push({
       id,
-      severity: stripSeverityIcon(severityCell),
+      severity,
       description,
       evidence,
     });
@@ -63,7 +76,7 @@ export function parseBugRegister(markdownText) {
     return { error: 'Bug Register table has no rows.' };
   }
 
-  return { bugs };
+  return { bugs, warnings };
 }
 
 export function parseReportHeader(markdownText) {
@@ -96,8 +109,8 @@ export function inferEnvironment(url) {
     return 'Dev';
   }
   if (hostname === 'localhost' || hostname === '127.0.0.1') return 'Dev';
-  if (hostname.startsWith('staging.') || hostname.includes('staging')) return 'Staging';
-  if (hostname.startsWith('dev.') || hostname.includes('.dev.')) return 'Dev';
+  if (/(^|\.)staging(\.|$)/.test(hostname)) return 'Staging';
+  if (/(^|\.)dev(\.|$)/.test(hostname)) return 'Dev';
   return 'Production';
 }
 
@@ -143,8 +156,13 @@ export function buildTicketDescription(bug, header, reporterName) {
   ].join('\n');
 }
 
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
 export function findActiveSprint(sprintLists, today) {
-  const match = sprintLists.find((sprint) => sprint.startDate <= today && today <= sprint.endDate);
+  const validSprints = sprintLists.filter(
+    (sprint) => ISO_DATE_RE.test(sprint.startDate) && ISO_DATE_RE.test(sprint.endDate)
+  );
+  const match = validSprints.find((sprint) => sprint.startDate <= today && today <= sprint.endDate);
   if (!match) {
     return { error: `No sprint list covers today's date (${today}). Ask the user to pick a destination list manually.` };
   }
@@ -177,6 +195,7 @@ export function buildTickets({ markdownText, reportPath, sprintLists, today, rep
     sprintListId: sprintResult.id,
     sprintListName: sprintResult.name,
     tickets,
+    warnings: bugRegisterResult.warnings || [],
   };
 }
 

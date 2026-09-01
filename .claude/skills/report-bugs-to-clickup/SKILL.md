@@ -41,6 +41,16 @@ Parse the single line of JSON printed to stdout.
 
 ## Step 4 — Confirm before creating anything
 
+If `result.warnings` is a non-empty array, display those warnings to the user prominently ABOVE the confirmation table — e.g.:
+
+```
+⚠️ 2 row(s) had issues:
+- Skipped malformed row: "| BUG-004 | 🔴 High |"
+- Unrecognized severity "Critical" for row BUG-005 — expected High, Medium, or Low
+```
+
+Let the user decide whether to proceed as-is, fix the source report and re-run, or manually adjust the affected ticket before confirming.
+
 Show the user a table, one row per ticket in `result.tickets`:
 
 | Title | Severity | Destination List | Tag | Assignee |
@@ -71,7 +81,7 @@ After a ticket is created successfully, try to attach its evidence screenshot:
 1. Resolve the full path to the evidence file: the ticket's `evidence` value (from the parser's output, e.g. `02-invalid-email.png`) is a filename relative to the report's own directory. For example, if the report is at `evidence/x/register/2026-03-26/qa-report.md` and `evidence` is `02-invalid-email.png`, the full path is `evidence/x/register/2026-03-26/02-invalid-email.png`.
 2. Check with `Bash` (or `Read`) whether that file exists on disk.
    - If it does **not** exist, skip attachment for this ticket silently — this is not a batch-aborting failure. Note "no evidence file found" against this ticket's record so Step 6 can mention it.
-   - If it **does** exist, call `mcp__claude_ai_ClickUp__clickup_request_attachment_upload` with the created task's ID. Follow the returned upload instructions (URL, method, multipart field name) to upload the file with a native HTTP client via `Bash` (e.g. `curl`).
+   - If it **does** exist, call `mcp__claude_ai_ClickUp__clickup_request_attachment_upload` with the created task's ID. Follow the returned upload instructions (URL, method, multipart field name) to upload the file with a native HTTP client via `Bash` (e.g. `curl`). Use `curl -f` (which fails, and returns a non-zero exit code, on an HTTP error response) or explicitly check the HTTP status code returned, rather than relying only on curl's plain exit code — a plain `curl` call can exit `0` even on a 4xx/5xx response, which would make a failed upload look like a success.
 3. If the upload request or the follow-up HTTP upload fails, record the failure with the ticket's title (do not stop the batch) and note "evidence upload failed" against this ticket's record.
 
 ## Step 6 — Final summary

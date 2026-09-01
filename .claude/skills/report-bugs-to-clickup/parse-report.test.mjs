@@ -28,7 +28,56 @@ test('parseBugRegister extracts rows from a Bug Register table', () => {
       { id: 'BUG-002', severity: 'Medium', description: 'Submit button stays enabled during request', evidence: '04-double-submit.png' },
       { id: 'BUG-003', severity: 'Low', description: 'Placeholder text has low contrast', evidence: '05-contrast.png' },
     ],
+    warnings: [],
   });
+});
+
+test('parseBugRegister unescapes \\| in a cell and does not misalign the row', () => {
+  const md = `
+## Bug Register
+| ID | Severity | Description | Evidence |
+|----|----------|--------------|----------|
+| BUG-001 | 🔴 High | a \\| b | 02-invalid-email.png |
+`;
+  const result = parseBugRegister(md);
+  assert.deepEqual(result, {
+    bugs: [
+      { id: 'BUG-001', severity: 'High', description: 'a | b', evidence: '02-invalid-email.png' },
+    ],
+    warnings: [],
+  });
+});
+
+test('parseBugRegister warns and skips a malformed short row while keeping valid rows', () => {
+  const md = `
+## Bug Register
+| ID | Severity | Description | Evidence |
+|----|----------|--------------|----------|
+| BUG-001 | 🔴 High |
+| BUG-002 | 🟡 Medium | Submit button stays enabled during request | 04-double-submit.png |
+`;
+  const result = parseBugRegister(md);
+  assert.deepEqual(result.bugs, [
+    { id: 'BUG-002', severity: 'Medium', description: 'Submit button stays enabled during request', evidence: '04-double-submit.png' },
+  ]);
+  assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0], /malformed/i);
+  assert.match(result.warnings[0], /BUG-001/);
+});
+
+test('parseBugRegister warns on an unrecognized severity value but keeps the trimmed value', () => {
+  const md = `
+## Bug Register
+| ID | Severity | Description | Evidence |
+|----|----------|--------------|----------|
+| BUG-001 | 🔵 Critical | Something bad happened | 02-invalid-email.png |
+`;
+  const result = parseBugRegister(md);
+  assert.deepEqual(result.bugs, [
+    { id: 'BUG-001', severity: 'Critical', description: 'Something bad happened', evidence: '02-invalid-email.png' },
+  ]);
+  assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0], /Unrecognized severity "Critical" for row BUG-001/);
 });
 
 test('parseBugRegister returns an error when the section is missing', () => {
@@ -77,6 +126,10 @@ test('inferEnvironment detects Dev from localhost', () => {
 
 test('inferEnvironment defaults to Production for other domains', () => {
   assert.equal(inferEnvironment('https://otonomi.ai/dashboard'), 'Production');
+});
+
+test('inferEnvironment does not misclassify a production hostname that merely contains "staging" as a substring', () => {
+  assert.equal(inferEnvironment('https://staging-solutions.com/checkout'), 'Production');
 });
 
 test('inferPage maps the root subpath to Home', () => {
@@ -150,6 +203,14 @@ test('findActiveSprint returns an error for an empty list', () => {
   });
 });
 
+test('findActiveSprint ignores an entry with malformed dates and still finds the valid match', () => {
+  const sprints = [
+    { id: '1', name: 'Broken Sprint', startDate: null, endDate: undefined },
+    { id: '2', name: 'Sprint 14', startDate: '2026-08-29', endDate: '2026-09-11' },
+  ];
+  assert.deepEqual(findActiveSprint(sprints, '2026-09-01'), { id: '2', name: 'Sprint 14' });
+});
+
 test('buildTickets combines parsing, inference, and building end-to-end', () => {
   const md = `
 # QA Report — Register Flow
@@ -202,6 +263,7 @@ test('buildTickets combines parsing, inference, and building end-to-end', () => 
         evidence: '02-invalid-email.png',
       },
     ],
+    warnings: [],
   });
 });
 
