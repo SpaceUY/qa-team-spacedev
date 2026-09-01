@@ -50,3 +50,54 @@ export function inferPage(reportPath) {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
+
+export function parseNiceToHave(markdownText) {
+  const lines = markdownText.split('\n');
+  const sectionIdx = lines.findIndex((line) => /^###\s+Nice to Have/.test(line.trim()));
+  if (sectionIdx === -1) {
+    return { error: 'No "Nice to Have" subsection found under Recommended Actions.' };
+  }
+
+  const improvements = [];
+  const warnings = [];
+  for (let i = sectionIdx + 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (/^#{1,6}\s+/.test(line)) break; // next heading of any level ends the subsection
+    if (!line.startsWith('-')) continue; // skip blank lines between bullets
+    const description = line.replace(/^-\s*/, '').trim();
+    if (description === '') {
+      warnings.push('Skipped empty bullet under "Nice to Have"');
+      continue;
+    }
+    improvements.push({ description });
+  }
+
+  if (improvements.length === 0) {
+    return { error: '"Nice to Have" subsection has no bullet items.' };
+  }
+
+  return { improvements, warnings };
+}
+
+const IMAGE_EXT_RE = /\.(png|jpe?g)$/i;
+const LEADING_NUMBER_RE = /^(\d+)-/;
+
+export function findSharedEvidenceFile(reportDir) {
+  let entries;
+  try {
+    entries = fs.readdirSync(reportDir);
+  } catch {
+    return null;
+  }
+  const imageFiles = entries.filter((name) => IMAGE_EXT_RE.test(name));
+  if (imageFiles.length === 0) return null;
+
+  imageFiles.sort((a, b) => {
+    const numA = parseInt(a.match(LEADING_NUMBER_RE)?.[1] ?? 'Infinity', 10);
+    const numB = parseInt(b.match(LEADING_NUMBER_RE)?.[1] ?? 'Infinity', 10);
+    if (numA !== numB) return numA - numB;
+    return a.localeCompare(b);
+  });
+
+  return imageFiles[0];
+}
