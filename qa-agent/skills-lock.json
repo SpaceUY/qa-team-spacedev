@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "skills": {
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "516bd2154eb843a8240e43d5b285229129853114ad7075a5e141e1c08e408c84"
+    },
+    "qa": {
+      "source": "45ck/claude-sdlc-plugin",
+      "sourceType": "github",
+      "computedHash": "9242d57dd2474f67df00bc11b954b8d50aefa7ce14473fa87921d1006ccfe849"
+    },
+    "verification-before-completion": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "9b446f0c7fe1cfb560b1d34439523b1a76d5f177290007b2c053a1c749a4a8ba"
+    },
+    "qa-blackbox": {
+      "source": ".agents/skills/qa-blackbox",
+      "sourceType": "local"
+    }
+  }
+}

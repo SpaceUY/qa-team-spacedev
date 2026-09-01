@@ -1,0 +1,14 @@
+{
+  "name": "qa-e2e-toolkit-e2e-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Generic Playwright Test suite for SpaceDev QA E2E regression testing",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
+  }
+}
