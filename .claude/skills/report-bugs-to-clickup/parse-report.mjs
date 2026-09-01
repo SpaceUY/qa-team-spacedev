@@ -1,3 +1,5 @@
+import path from 'node:path';
+
 const SEVERITY_ICONS = { '🔴': 'High', '🟡': 'Medium', '🟢': 'Low' };
 
 function stripSeverityIcon(cell) {
@@ -77,4 +79,38 @@ export function parseReportHeader(markdownText) {
     url: urlMatch[1].trim(),
     date: dateMatch[1].trim(),
   };
+}
+
+export function inferPlatform(header, reportPath) {
+  const haystack = `${header.flowName} ${reportPath}`.toLowerCase();
+  if (haystack.includes('mobile')) return 'Mobile';
+  return 'Web';
+}
+
+export function inferEnvironment(url) {
+  let hostname;
+  try {
+    hostname = new URL(url).hostname.toLowerCase();
+  } catch {
+    return 'Dev';
+  }
+  if (hostname === 'localhost' || hostname === '127.0.0.1') return 'Dev';
+  if (hostname.startsWith('staging.') || hostname.includes('staging')) return 'Staging';
+  if (hostname.startsWith('dev.') || hostname.includes('.dev.')) return 'Dev';
+  return 'Production';
+}
+
+export function inferPage(reportPath) {
+  const normalized = reportPath.split(path.sep).join('/');
+  const parts = normalized.split('/');
+  const evidenceIdx = parts.indexOf('evidence');
+  if (evidenceIdx === -1 || parts.length < evidenceIdx + 3) {
+    return 'Unknown';
+  }
+  const subpath = parts[evidenceIdx + 2];
+  if (subpath === 'root') return 'Home';
+  return subpath
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 }

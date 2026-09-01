@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseBugRegister, parseReportHeader } from './parse-report.mjs';
+import { parseBugRegister, parseReportHeader, inferPlatform, inferEnvironment, inferPage } from './parse-report.mjs';
 
 test('parseBugRegister extracts rows from a Bug Register table', () => {
   const md = `
@@ -57,4 +57,36 @@ test('parseReportHeader extracts flow name, url, and date', () => {
     url: 'https://staging.otonomi.ai/register',
     date: '2026-03-26',
   });
+});
+
+test('inferPlatform defaults to Web', () => {
+  assert.equal(inferPlatform({ flowName: 'Register Flow' }, 'evidence/staging-otonomi-ai/register/2026-03-26/qa-report.md'), 'Web');
+});
+
+test('inferPlatform detects Mobile from flow name', () => {
+  assert.equal(inferPlatform({ flowName: 'Mobile App Login Flow' }, 'evidence/x/login/2026-03-26/qa-report.md'), 'Mobile');
+});
+
+test('inferEnvironment detects Staging from hostname', () => {
+  assert.equal(inferEnvironment('https://staging.otonomi.ai/register'), 'Staging');
+});
+
+test('inferEnvironment detects Dev from localhost', () => {
+  assert.equal(inferEnvironment('http://localhost:5173/login'), 'Dev');
+});
+
+test('inferEnvironment defaults to Production for other domains', () => {
+  assert.equal(inferEnvironment('https://otonomi.ai/dashboard'), 'Production');
+});
+
+test('inferPage maps the root subpath to Home', () => {
+  assert.equal(inferPage('evidence/localhost-5173/root/2026-03-26/qa-report.md'), 'Home');
+});
+
+test('inferPage title-cases a simple subpath', () => {
+  assert.equal(inferPage('evidence/localhost-5173/register/2026-03-26/qa-report.md'), 'Register');
+});
+
+test('inferPage title-cases and splits a hyphenated nested subpath', () => {
+  assert.equal(inferPage('evidence/localhost-5173/users-profile/2026-03-26/qa-report.md'), 'Users Profile');
 });
