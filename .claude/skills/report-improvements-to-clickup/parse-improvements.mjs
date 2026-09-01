@@ -101,3 +101,19 @@ export function findSharedEvidenceFile(reportDir) {
 
   return imageFiles[0];
 }
+
+export function buildImprovementTitle(improvement, platform, environment, page) {
+  return `[Improvement] ${platform} | ${environment} | ${page} | ${improvement.description}`;
+}
+
+export function buildImprovementDescription(improvement, reporterName, priority, severity) {
+  return [
+    'In Scope:',
+    improvement.description,
+    '',
+    'Additional information:',
+    `Reported by: ${reporterName}`,
+    `Priority: ${priority}`,
+    `Severity: ${severity}`,
+  ].join('\n');
+}

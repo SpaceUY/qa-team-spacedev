@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseReportHeader, inferPlatform, inferEnvironment, inferPage, parseNiceToHave, findSharedEvidenceFile } from './parse-improvements.mjs';
+import { parseReportHeader, inferPlatform, inferEnvironment, inferPage, parseNiceToHave, findSharedEvidenceFile, buildImprovementTitle, buildImprovementDescription } from './parse-improvements.mjs';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -156,4 +156,27 @@ test('findSharedEvidenceFile returns null for a nonexistent directory', () => {
   const dir = join(tmpdir(), 'qa-evidence-does-not-exist-' + Date.now());
   const result = findSharedEvidenceFile(dir);
   assert.equal(result, null);
+});
+
+test('buildImprovementTitle assembles the pipe-separated [Improvement] format', () => {
+  const improvement = { description: 'Add eye icon on login, password field' };
+  assert.equal(
+    buildImprovementTitle(improvement, 'Web', 'Staging', 'Login'),
+    '[Improvement] Web | Staging | Login | Add eye icon on login, password field'
+  );
+});
+
+test('buildImprovementDescription fills the fixed In Scope template', () => {
+  const improvement = { description: 'Add eye icon on login, password field' };
+  const description = buildImprovementDescription(improvement, 'Julia Disarli', 'Low', 'Low');
+
+  assert.equal(description, [
+    'In Scope:',
+    'Add eye icon on login, password field',
+    '',
+    'Additional information:',
+    'Reported by: Julia Disarli',
+    'Priority: Low',
+    'Severity: Low',
+  ].join('\n'));
 });
