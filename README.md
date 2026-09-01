@@ -47,8 +47,9 @@ and does not run in CI.
 
 The `report-bugs-to-clickup` skill (`.claude/skills/report-bugs-to-clickup/`)
 reads any `qa-report.md`'s Bug Register table and creates one ClickUp bug
-ticket per row, in the project's active sprint, tagged by environment and
-assigned to the logged-in ClickUp user.
+ticket per row, in the project's fixed Bugs List, additionally associated
+with the active sprint, tagged by environment and assigned to the
+logged-in ClickUp user.
 
 This is a manual, on-demand skill — it does not run automatically at the
 end of a `qa-agent` session. Run it explicitly when you're ready to file
@@ -60,3 +61,23 @@ tickets:
 
 See `docs/superpowers/specs/2026-09-01-report-bugs-to-clickup-design.md`
 for the full design.
+
+## Reporting improvements to ClickUp
+
+The `report-improvements-to-clickup` skill
+(`.claude/skills/report-improvements-to-clickup/`) reads a `qa-report.md`'s
+"Nice to Have" recommendations and creates one ClickUp Improvement ticket
+per item, in the project's fixed Improvements List, additionally
+associated with the active sprint, assigned to the logged-in ClickUp
+user, with the report's shared happy-path screenshot attached.
+
+Also manual/on-demand:
+
+```bash
+/report-improvements-to-clickup path/to/qa-report.md
+```
+
+See
+`docs/superpowers/specs/2026-09-01-report-improvements-to-clickup-design.md`
+for the full design, including the fixed-List-plus-sprint-association
+model both skills share.
