@@ -4,6 +4,8 @@
 **Author:** Julia Disarli (julia.disarli@otonomi.ai)
 **Status:** Approved
 
+> ⚠️ **Superseded in part:** the ticket-destination model described in §5 below was corrected on 2026-09-01 — see `2026-09-01-report-improvements-to-clickup-design.md` Part 1 for the fix. Tickets are created in a **fixed project List** (asked from the user), and separately **associated** to the active Sprint List via `clickup_add_task_to_list` — the sprint list is never the ticket's creation destination. The rest of this document (title/description format, confirmation gate, severity handling, etc.) is unaffected and still accurate.
+
 ## Purpose
 
 Automate the creation of ClickUp bug tickets from a `qa-report.md` file
@@ -125,17 +127,18 @@ as empty template placeholders — the skill does not fabricate details
 the report doesn't contain. The user or assignee fills these in
 ClickUp afterward if needed.
 
-### 5. Locate the active sprint (ticket destination)
+### 5. Locate the active sprint (for later association)
 
 Ask the user which ClickUp Space/Folder holds the project's Sprints
 (e.g. "Otonomi > Sprints"). Use
 `clickup_get_workspace_hierarchy` to list the Lists inside that
 Folder. Each sprint List has start/end dates; the skill treats the
 List whose date range includes today's date as the "Current Sprint"
-and uses it as the destination List for all tickets in this run.
+and stores it for later association with created tickets (via
+`clickup_add_task_to_list` in step 9).
 
 If no List's date range covers today (gap between sprints, or dates
-not set), tell the user and ask them to pick the destination List
+not set), tell the user and ask them to pick the sprint List
 manually from the ones shown.
 
 ### 6. Identify the reporting QA
@@ -159,7 +162,7 @@ directly).
 Before calling any ClickUp write operation, show the user a table
 with, for every bug found in the report:
 
-| Title | Severity | Destination (Sprint/List) | Tag | Assignee |
+| Title | Severity | Destination (List) | Sprint | Tag | Assignee |
 
 Wait for explicit confirmation. If the user asks for changes (e.g.
 drop a row, edit a title), apply them and re-show the table before
@@ -170,11 +173,13 @@ proceeding.
 For every row in the Bug Register (all severities — High, Medium,
 Low; no filtering), in order:
 
-1. `clickup_create_task` in the resolved sprint List, with the built
-   title and description, and the assignee set to the current QA
-   user.
-2. `clickup_add_tag_to_task` with the environment tag.
-3. If the Evidence column names a screenshot file that exists on
+1. `clickup_create_task` in the fixed project List (as configured
+   by the user), with the built title and description, and the
+   assignee set to the current QA user.
+2. `clickup_add_task_to_list` to associate the created ticket with
+   the active Sprint List (found in step 5).
+3. `clickup_add_tag_to_task` with the environment tag.
+4. If the Evidence column names a screenshot file that exists on
    disk next to the report, attach it via
    `clickup_attach_task_file` / `clickup_request_attachment_upload`.
 
