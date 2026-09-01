@@ -2,7 +2,7 @@
 name: report-bugs-to-clickup
 description: Reads a qa-report.md's Bug Register table and creates one ClickUp bug ticket per row, in the project's current sprint, tagged by environment and assigned to the logged-in QA. Invoke manually with the path to a qa-report.md.
 user-invocable: true
-allowed-tools: Bash, Read, AskUserQuestion, mcp__claude_ai_ClickUp__clickup_get_workspace_hierarchy, mcp__claude_ai_ClickUp__clickup_create_task, mcp__claude_ai_ClickUp__clickup_resolve_assignees
+allowed-tools: Bash, Read, AskUserQuestion, mcp__claude_ai_ClickUp__clickup_get_workspace_hierarchy, mcp__claude_ai_ClickUp__clickup_create_task, mcp__claude_ai_ClickUp__clickup_resolve_assignees, mcp__claude_ai_ClickUp__clickup_request_attachment_upload
 ---
 
 # report-bugs-to-clickup — Create ClickUp bug tickets from a QA report
@@ -64,9 +64,19 @@ For each confirmed ticket, call `mcp__claude_ai_ClickUp__clickup_create_task`:
 
 If a `clickup_create_task` call fails (e.g. the tag doesn't exist yet in the Space), record the failure with the ticket's title and continue to the next ticket — do not stop the batch.
 
+### Attach the evidence screenshot, if present
+
+After a ticket is created successfully, try to attach its evidence screenshot:
+
+1. Resolve the full path to the evidence file: the ticket's `evidence` value (from the parser's output, e.g. `02-invalid-email.png`) is a filename relative to the report's own directory. For example, if the report is at `evidence/x/register/2026-03-26/qa-report.md` and `evidence` is `02-invalid-email.png`, the full path is `evidence/x/register/2026-03-26/02-invalid-email.png`.
+2. Check with `Bash` (or `Read`) whether that file exists on disk.
+   - If it does **not** exist, skip attachment for this ticket silently — this is not a batch-aborting failure. Note "no evidence file found" against this ticket's record so Step 6 can mention it.
+   - If it **does** exist, call `mcp__claude_ai_ClickUp__clickup_request_attachment_upload` with the created task's ID. Follow the returned upload instructions (URL, method, multipart field name) to upload the file with a native HTTP client via `Bash` (e.g. `curl`).
+3. If the upload request or the follow-up HTTP upload fails, record the failure with the ticket's title (do not stop the batch) and note "evidence upload failed" against this ticket's record.
+
 ## Step 6 — Final summary
 
-Print a table to the user: for every ticket, either the created ClickUp task URL (returned by `clickup_create_task`) or the failure reason. Never claim success for a ticket that failed.
+Print a table to the user: for every ticket, either the created ClickUp task URL (returned by `clickup_create_task`) or the failure reason, plus the evidence-attachment outcome (attached / no evidence file found / upload failed / not applicable — e.g. ticket creation itself failed). Never claim success for a ticket that failed, and never claim a screenshot was attached when it wasn't.
 
 ## Constraints
 
