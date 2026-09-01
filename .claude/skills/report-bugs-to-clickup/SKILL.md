@@ -1,0 +1,76 @@
+---
+name: report-bugs-to-clickup
+description: Reads a qa-report.md's Bug Register table and creates one ClickUp bug ticket per row, in the project's current sprint, tagged by environment and assigned to the logged-in QA. Invoke manually with the path to a qa-report.md.
+user-invocable: true
+allowed-tools: Bash, Read, AskUserQuestion, mcp__claude_ai_ClickUp__clickup_get_workspace_hierarchy, mcp__claude_ai_ClickUp__clickup_create_task, mcp__claude_ai_ClickUp__clickup_resolve_assignees
+---
+
+# report-bugs-to-clickup — Create ClickUp bug tickets from a QA report
+
+You turn a `qa-report.md`'s **Bug Register** table into ClickUp bug tickets, one ticket per row, in the project's active sprint list. This is a manual, on-demand skill — only run it when the user explicitly invokes `/report-bugs-to-clickup <path>`.
+
+## Step 0 — Resolve the report path
+
+The user's argument is the path to a `qa-report.md`. If no path was given, ask for one (`AskUserQuestion` or a direct question) before continuing. Verify the file exists with `Read` before proceeding; if it doesn't, tell the user and stop.
+
+## Step 1 — Ask which Sprints Folder to use
+
+Ask the user which ClickUp Space/Folder holds this project's sprints (e.g. "Otonomi > Sprints"). Then call `mcp__claude_ai_ClickUp__clickup_get_workspace_hierarchy` with `max_depth: "2"` to list Spaces → Folders → Lists, and locate the Folder the user named. Collect every List inside it as `{id, name, startDate, endDate}` — ClickUp lists expose `start_date`/`due_date` (or the Folder's Sprint configuration) as millisecond timestamps; convert each to `YYYY-MM-DD` before using them.
+
+If the user isn't sure which Folder, show them the Space/Folder names returned by the hierarchy call and let them pick.
+
+## Step 2 — Identify the reporting QA
+
+Call `mcp__claude_ai_ClickUp__clickup_resolve_assignees` with `assignees: ["me"]` to get the current user's ID and display name. Keep the display name for the description template and the ID for the `assignees` field on task creation.
+
+## Step 3 — Run the parser
+
+Shell out via `Bash`:
+
+```bash
+node .claude/skills/report-bugs-to-clickup/parse-report.mjs "<report-path>" \
+  --sprints='<JSON array of {id,name,startDate,endDate} from Step 1>' \
+  --today=<today's date, YYYY-MM-DD> \
+  --reporter="<display name from Step 2>"
+```
+
+Parse the single line of JSON printed to stdout.
+
+- If it has an `error` field, show the error to the user verbatim and stop. In particular, if the error mentions no sprint covering today's date, ask the user to pick a destination List manually from the ones listed in Step 1, then skip straight to Step 5 using that List's ID as `sprintListId` and re-run the parser with a synthetic single-entry `--sprints` array covering today (start/end date open-ended around today) so the rest of the flow stays unchanged.
+- Otherwise, continue to Step 4 with `result.tickets` and `result.sprintListId`.
+
+## Step 4 — Confirm before creating anything
+
+Show the user a table, one row per ticket in `result.tickets`:
+
+| Title | Severity | Destination List | Tag | Assignee |
+|---|---|---|---|---|
+
+- Destination List: `result.sprintListName` for every row (all tickets in one run go to the same sprint list).
+- Tag: the ticket's `environment` field, lowercased (`staging`, `production`, `dev`).
+- Assignee: the display name from Step 2.
+
+Ask the user to confirm (`AskUserQuestion`, yes/no or "edit"). If they ask for changes (drop a bug, edit a title), apply them to the in-memory list and re-show the table. Do not proceed to Step 5 without explicit confirmation.
+
+## Step 5 — Create the tickets
+
+For each confirmed ticket, call `mcp__claude_ai_ClickUp__clickup_create_task`:
+
+- `name`: the ticket's `title`
+- `list_id`: `result.sprintListId`
+- `markdown_description`: the ticket's `description`
+- `assignees`: `[<user ID from Step 2>]`
+- `tags`: `[<environment tag, lowercased>]`
+
+If a `clickup_create_task` call fails (e.g. the tag doesn't exist yet in the Space), record the failure with the ticket's title and continue to the next ticket — do not stop the batch.
+
+## Step 6 — Final summary
+
+Print a table to the user: for every ticket, either the created ClickUp task URL (returned by `clickup_create_task`) or the failure reason. Never claim success for a ticket that failed.
+
+## Constraints
+
+- Never fabricate `Preconditions`, `Steps to reproduce`, or `Expected result` content — these stay as the template's empty placeholders (`-`) unless the report itself states them.
+- Never skip Step 4's confirmation, even if the user seems in a hurry.
+- All severities (High, Medium, Low) get tickets — do not filter by severity.
+- If the ClickUp MCP tools are not available in this session, stop immediately and tell the user, the same way `qa-agent`'s Playwright MCP pre-flight check does — do not attempt a workaround.
