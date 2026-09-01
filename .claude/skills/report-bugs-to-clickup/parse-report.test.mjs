@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseBugRegister, parseReportHeader, inferPlatform, inferEnvironment, inferPage } from './parse-report.mjs';
+import { parseBugRegister, parseReportHeader, inferPlatform, inferEnvironment, inferPage, buildTicketTitle, buildTicketDescription } from './parse-report.mjs';
 
 test('parseBugRegister extracts rows from a Bug Register table', () => {
   const md = `
@@ -89,4 +89,39 @@ test('inferPage title-cases a simple subpath', () => {
 
 test('inferPage title-cases and splits a hyphenated nested subpath', () => {
   assert.equal(inferPage('evidence/localhost-5173/users-profile/2026-03-26/qa-report.md'), 'Users Profile');
+});
+
+test('buildTicketTitle assembles the pipe-separated format', () => {
+  const bug = { id: 'BUG-001', severity: 'High', description: 'The user cannot see the image', evidence: '01-home.png' };
+  assert.equal(
+    buildTicketTitle(bug, 'Web', 'Staging', 'Home'),
+    '[BUG] Web | Staging | Home | The user cannot see the image'
+  );
+});
+
+test('buildTicketDescription fills the fixed template', () => {
+  const bug = { id: 'BUG-001', severity: 'High', description: 'The user cannot see the image', evidence: '01-home.png' };
+  const header = { url: 'https://staging.otonomi.ai/' };
+  const description = buildTicketDescription(bug, header, 'Julia Disarli');
+
+  assert.equal(description, [
+    'Preconditions:',
+    '-',
+    '',
+    'Steps to reproduce:',
+    '-',
+    '',
+    'Actual Result:',
+    'The user cannot see the image',
+    '',
+    'Expected result:',
+    '-',
+    '',
+    'Additional information:',
+    'Original ID: BUG-001',
+    'Severity: High',
+    'URL: https://staging.otonomi.ai/',
+    'Evidence: 01-home.png',
+    'Reported by: Julia Disarli',
+  ].join('\n'));
 });

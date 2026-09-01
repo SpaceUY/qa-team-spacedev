@@ -114,3 +114,30 @@ export function inferPage(reportPath) {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
+
+export function buildTicketTitle(bug, platform, environment, page) {
+  return `[BUG] ${platform} | ${environment} | ${page} | ${bug.description}`;
+}
+
+export function buildTicketDescription(bug, header, reporterName) {
+  return [
+    'Preconditions:',
+    '-',
+    '',
+    'Steps to reproduce:',
+    '-',
+    '',
+    'Actual Result:',
+    bug.description,
+    '',
+    'Expected result:',
+    '-',
+    '',
+    'Additional information:',
+    `Original ID: ${bug.id}`,
+    `Severity: ${bug.severity}`,
+    `URL: ${header.url}`,
+    `Evidence: ${bug.evidence}`,
+    `Reported by: ${reporterName}`,
+  ].join('\n');
+}
