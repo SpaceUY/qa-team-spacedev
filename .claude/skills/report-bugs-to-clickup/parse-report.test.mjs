@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseBugRegister, parseReportHeader, inferPlatform, inferEnvironment, inferPage, buildTicketTitle, buildTicketDescription } from './parse-report.mjs';
+import { parseBugRegister, parseReportHeader, inferPlatform, inferEnvironment, inferPage, buildTicketTitle, buildTicketDescription, findActiveSprint } from './parse-report.mjs';
 
 test('parseBugRegister extracts rows from a Bug Register table', () => {
   const md = `
@@ -124,4 +124,28 @@ test('buildTicketDescription fills the fixed template', () => {
     'Evidence: 01-home.png',
     'Reported by: Julia Disarli',
   ].join('\n'));
+});
+
+test('findActiveSprint picks the list whose date range covers today', () => {
+  const sprints = [
+    { id: '1', name: 'Sprint 12', startDate: '2026-08-01', endDate: '2026-08-14' },
+    { id: '2', name: 'Sprint 13', startDate: '2026-08-15', endDate: '2026-08-28' },
+    { id: '3', name: 'Sprint 14', startDate: '2026-08-29', endDate: '2026-09-11' },
+  ];
+  assert.deepEqual(findActiveSprint(sprints, '2026-09-01'), { id: '3', name: 'Sprint 14' });
+});
+
+test('findActiveSprint returns an error when no sprint covers today', () => {
+  const sprints = [
+    { id: '1', name: 'Sprint 12', startDate: '2026-08-01', endDate: '2026-08-14' },
+  ];
+  assert.deepEqual(findActiveSprint(sprints, '2026-09-01'), {
+    error: 'No sprint list covers today\'s date (2026-09-01). Ask the user to pick a destination list manually.',
+  });
+});
+
+test('findActiveSprint returns an error for an empty list', () => {
+  assert.deepEqual(findActiveSprint([], '2026-09-01'), {
+    error: 'No sprint list covers today\'s date (2026-09-01). Ask the user to pick a destination list manually.',
+  });
 });

@@ -141,3 +141,11 @@ export function buildTicketDescription(bug, header, reporterName) {
     `Reported by: ${reporterName}`,
   ].join('\n');
 }
+
+export function findActiveSprint(sprintLists, today) {
+  const match = sprintLists.find((sprint) => sprint.startDate <= today && today <= sprint.endDate);
+  if (!match) {
+    return { error: `No sprint list covers today's date (${today}). Ask the user to pick a destination list manually.` };
+  }
+  return { id: match.id, name: match.name };
+}
