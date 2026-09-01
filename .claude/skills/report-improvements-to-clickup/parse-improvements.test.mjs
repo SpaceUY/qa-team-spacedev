@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseReportHeader, inferPlatform, inferEnvironment, inferPage, parseNiceToHave, findSharedEvidenceFile, buildImprovementTitle, buildImprovementDescription } from './parse-improvements.mjs';
+import { parseReportHeader, inferPlatform, inferEnvironment, inferPage, parseNiceToHave, findSharedEvidenceFile, buildImprovementTitle, buildImprovementDescription, findActiveSprint } from './parse-improvements.mjs';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -179,4 +179,36 @@ test('buildImprovementDescription fills the fixed In Scope template', () => {
     'Priority: Low',
     'Severity: Low',
   ].join('\n'));
+});
+
+test('findActiveSprint picks the list whose date range covers today', () => {
+  const sprints = [
+    { id: '1', name: 'Sprint 12', startDate: '2026-08-01', endDate: '2026-08-14' },
+    { id: '2', name: 'Sprint 13', startDate: '2026-08-15', endDate: '2026-08-28' },
+    { id: '3', name: 'Sprint 14', startDate: '2026-08-29', endDate: '2026-09-11' },
+  ];
+  assert.deepEqual(findActiveSprint(sprints, '2026-09-01'), { id: '3', name: 'Sprint 14' });
+});
+
+test('findActiveSprint returns an error when no sprint covers today', () => {
+  const sprints = [
+    { id: '1', name: 'Sprint 12', startDate: '2026-08-01', endDate: '2026-08-14' },
+  ];
+  assert.deepEqual(findActiveSprint(sprints, '2026-09-01'), {
+    error: 'No sprint list covers today\'s date (2026-09-01). Ask the user to pick a destination list manually.',
+  });
+});
+
+test('findActiveSprint returns an error for an empty list', () => {
+  assert.deepEqual(findActiveSprint([], '2026-09-01'), {
+    error: 'No sprint list covers today\'s date (2026-09-01). Ask the user to pick a destination list manually.',
+  });
+});
+
+test('findActiveSprint ignores an entry with malformed dates and still finds the valid match', () => {
+  const sprints = [
+    { id: '1', name: 'Bad Sprint', startDate: null, endDate: undefined },
+    { id: '2', name: 'Sprint 14', startDate: '2026-08-29', endDate: '2026-09-11' },
+  ];
+  assert.deepEqual(findActiveSprint(sprints, '2026-09-01'), { id: '2', name: 'Sprint 14' });
 });

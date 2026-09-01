@@ -117,3 +117,16 @@ export function buildImprovementDescription(improvement, reporterName, priority,
     `Severity: ${severity}`,
   ].join('\n');
 }
+
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+export function findActiveSprint(sprintLists, today) {
+  const validSprints = sprintLists.filter(
+    (sprint) => ISO_DATE_RE.test(sprint.startDate) && ISO_DATE_RE.test(sprint.endDate)
+  );
+  const match = validSprints.find((sprint) => sprint.startDate <= today && today <= sprint.endDate);
+  if (!match) {
+    return { error: `No sprint list covers today's date (${today}). Ask the user to pick a destination list manually.` };
+  }
+  return { id: match.id, name: match.name };
+}
