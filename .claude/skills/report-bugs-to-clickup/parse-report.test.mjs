@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseBugRegister, parseReportHeader, inferPlatform, inferEnvironment, inferPage, buildTicketTitle, buildTicketDescription, findActiveSprint } from './parse-report.mjs';
+import { parseBugRegister, parseReportHeader, inferPlatform, inferEnvironment, inferPage, buildTicketTitle, buildTicketDescription, findActiveSprint, buildTickets } from './parse-report.mjs';
 
 test('parseBugRegister extracts rows from a Bug Register table', () => {
   const md = `
@@ -148,4 +148,70 @@ test('findActiveSprint returns an error for an empty list', () => {
   assert.deepEqual(findActiveSprint([], '2026-09-01'), {
     error: 'No sprint list covers today\'s date (2026-09-01). Ask the user to pick a destination list manually.',
   });
+});
+
+test('buildTickets combines parsing, inference, and building end-to-end', () => {
+  const md = `
+# QA Report — Register Flow
+
+**Date:** 2026-03-26
+**URL:** https://staging.otonomi.ai/register
+
+## Bug Register
+| ID | Severity | Description | Evidence |
+|----|----------|--------------|----------|
+| BUG-001 | 🔴 High | Email validation accepts malformed addresses | 02-invalid-email.png |
+`;
+  const sprintLists = [{ id: '9', name: 'Sprint 14', startDate: '2026-08-29', endDate: '2026-09-11' }];
+  const result = buildTickets({
+    markdownText: md,
+    reportPath: 'evidence/staging-otonomi-ai/register/2026-03-26/qa-report.md',
+    sprintLists,
+    today: '2026-09-01',
+    reporterName: 'Julia Disarli',
+  });
+
+  assert.deepEqual(result, {
+    sprintListId: '9',
+    sprintListName: 'Sprint 14',
+    tickets: [
+      {
+        title: '[BUG] Web | Staging | Register | Email validation accepts malformed addresses',
+        description: [
+          'Preconditions:',
+          '-',
+          '',
+          'Steps to reproduce:',
+          '-',
+          '',
+          'Actual Result:',
+          'Email validation accepts malformed addresses',
+          '',
+          'Expected result:',
+          '-',
+          '',
+          'Additional information:',
+          'Original ID: BUG-001',
+          'Severity: High',
+          'URL: https://staging.otonomi.ai/register',
+          'Evidence: 02-invalid-email.png',
+          'Reported by: Julia Disarli',
+        ].join('\n'),
+        severity: 'High',
+        environment: 'Staging',
+        evidence: '02-invalid-email.png',
+      },
+    ],
+  });
+});
+
+test('buildTickets surfaces a parse error without throwing', () => {
+  const result = buildTickets({
+    markdownText: '# QA Report — Empty\n\n**Date:** 2026-03-26\n**URL:** https://x.com\n',
+    reportPath: 'evidence/x/root/2026-03-26/qa-report.md',
+    sprintLists: [],
+    today: '2026-09-01',
+    reporterName: 'Julia Disarli',
+  });
+  assert.deepEqual(result, { error: 'No "Bug Register" section found in report.' });
 });

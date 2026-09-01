@@ -1,4 +1,5 @@
 import path from 'node:path';
+import fs from 'node:fs';
 
 const SEVERITY_ICONS = { '🔴': 'High', '🟡': 'Medium', '🟢': 'Low' };
 
@@ -148,4 +149,81 @@ export function findActiveSprint(sprintLists, today) {
     return { error: `No sprint list covers today's date (${today}). Ask the user to pick a destination list manually.` };
   }
   return { id: match.id, name: match.name };
+}
+
+export function buildTickets({ markdownText, reportPath, sprintLists, today, reporterName }) {
+  const headerResult = parseReportHeader(markdownText);
+  if (headerResult.error) return headerResult;
+
+  const bugRegisterResult = parseBugRegister(markdownText);
+  if (bugRegisterResult.error) return bugRegisterResult;
+
+  const sprintResult = findActiveSprint(sprintLists, today);
+  if (sprintResult.error) return sprintResult;
+
+  const platform = inferPlatform(headerResult, reportPath);
+  const environment = inferEnvironment(headerResult.url);
+  const page = inferPage(reportPath);
+
+  const tickets = bugRegisterResult.bugs.map((bug) => ({
+    title: buildTicketTitle(bug, platform, environment, page),
+    description: buildTicketDescription(bug, headerResult, reporterName),
+    severity: bug.severity,
+    environment,
+    evidence: bug.evidence,
+  }));
+
+  return {
+    sprintListId: sprintResult.id,
+    sprintListName: sprintResult.name,
+    tickets,
+  };
+}
+
+function runCli() {
+  const [, , reportPathArg, ...rest] = process.argv;
+  const flags = Object.fromEntries(
+    rest
+      .filter((arg) => arg.startsWith('--'))
+      .map((arg) => {
+        const [key, ...valueParts] = arg.slice(2).split('=');
+        return [key, valueParts.join('=')];
+      })
+  );
+
+  if (!reportPathArg) {
+    console.log(JSON.stringify({ error: 'Usage: node parse-report.mjs <report-path> --sprints=<json> --today=<YYYY-MM-DD> --reporter="<name>"' }));
+    process.exitCode = 1;
+    return;
+  }
+
+  let markdownText;
+  try {
+    markdownText = fs.readFileSync(reportPathArg, 'utf8');
+  } catch (err) {
+    console.log(JSON.stringify({ error: `Could not read report file: ${err.message}` }));
+    process.exitCode = 1;
+    return;
+  }
+
+  let sprintLists = [];
+  try {
+    sprintLists = flags.sprints ? JSON.parse(flags.sprints) : [];
+  } catch (err) {
+    console.log(JSON.stringify({ error: `Invalid --sprints JSON: ${err.message}` }));
+    process.exitCode = 1;
+    return;
+  }
+
+  const today = flags.today || new Date().toISOString().slice(0, 10);
+  const reporterName = flags.reporter || 'Unknown QA';
+
+  const result = buildTickets({ markdownText, reportPath: reportPathArg, sprintLists, today, reporterName });
+  console.log(JSON.stringify(result));
+  if (result.error) process.exitCode = 1;
+}
+
+// Only run the CLI when this file is executed directly (not when imported by tests).
+if (import.meta.url === `file://${process.argv[1]}`) {
+  runCli();
 }
