@@ -190,16 +190,18 @@ If the same flow is tested more than once on the same day, screenshots are numbe
 
 ---
 
-## 🛠 Skills & Tools — Always Active
+## 🛠 Skills & Tools
 
-| Tool | Purpose |
-|------|---------|
-| `qa-blackbox` | Quality dimensions, scoring model, report format |
-| `frontend-design:frontend-design` | Visual audit: typography, contrast, layout, UX |
-| `superpowers:verification-before-completion` | Verify real evidence before claiming work complete |
-| Playwright MCP (`mcp__playwright__*`) | Navigation, interaction, screenshots, DOM inspection |
+| Tool | Purpose | Activation |
+|------|---------|------------|
+| `qa-blackbox` | Quality dimensions, scoring model, report format | Automatic — triggers on a URL+flow message (see above) |
+| `frontend-design:frontend-design` | Visual audit: typography, contrast, layout, UX | Automatic — part of the standard protocol |
+| `superpowers:verification-before-completion` | Verify real evidence before claiming work complete | Automatic — part of the standard protocol |
+| `qa-text-check` | Typo, grammar, mixed-language, and punctuation bugs in Spanish or English | **Manual only** — invoke explicitly with `/qa-text-check <url-or-flow> --lang=es\|en` |
+| Playwright MCP (`mcp__playwright__*`) | Navigation, interaction, screenshots, DOM inspection | Required for all of the above |
 
 > **Required:** Playwright MCP must be connected before any QA session starts. See Step 0 above.
+> **Note:** `qa-text-check` is never triggered automatically by the URL+flow auto-activation described above — it only runs when the user explicitly types `/qa-text-check`.
 
 ---
 
