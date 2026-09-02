@@ -30,17 +30,40 @@ Manual, on-demand. A project skill invoked explicitly by the user:
   it does not crawl a site on its own, the same way `qa-blackbox`
   expects a defined flow rather than exploring unprompted.
 
-It is **not** wired into `qa-blackbox`'s automatic flow. Rationale
-(same as `report-bugs-to-clickup`'s decoupling from `qa-agent`):
-editorial control over which screens get a text pass, and reusability
-— this skill can run standalone against any app/flow without a prior
-`qa-blackbox` session.
+It is **not** wired into `qa-blackbox`'s automatic flow, even though
+both skills live in the same `qa-agent` module (see Location below).
+Rationale: editorial control over which screens get a text pass, and
+reusability — this skill can run standalone against any app/flow
+without a prior `qa-blackbox` session.
 
 ## Location
 
-`qa-team/.claude/skills/qa-text-check/SKILL.md` — a project-level
-skill in this repo, alongside `report-bugs-to-clickup` and
-`report-improvements-to-clickup`.
+`qa-team/qa-agent/.agents/skills/qa-text-check/SKILL.md` — alongside
+`qa-blackbox`, `frontend-design`, and `verification-before-completion`.
+It belongs to the `qa-agent` module (Playwright MCP, no ClickUp), not
+to the root `.claude/skills/` directory: `report-bugs-to-clickup` and
+`report-improvements-to-clickup` live there instead because they never
+touch a browser — they only parse an already-generated `qa-report.md`
+and talk to the ClickUp MCP. `qa-text-check` navigates the live app,
+so it belongs with `qa-blackbox`, not with them.
+
+It is **not** a subagent. Like `qa-blackbox`, it's a skill that runs
+in `qa-agent`'s main session, invoked manually with `/qa-text-check`
+— no isolated context or parallel execution is needed, since it's one
+more sequential pass over the same screens a `qa-blackbox` session
+would visit.
+
+This also means two follow-up doc updates in `qa-agent`, done as part
+of implementing this skill (not optional polish):
+
+- `qa-agent/README.md` — add `qa-text-check` to the "What Each Piece
+  Does" table and to the list of skills expected in the session-start
+  banner.
+- `qa-agent/CLAUDE.md` — list `qa-text-check` as an available skill,
+  explicitly marked as **not** auto-activated (unlike `qa-blackbox`,
+  which triggers automatically on a URL+flow message) — it only runs
+  when the user explicitly invokes `/qa-text-check`, so the existing
+  automatic trigger is unaffected.
 
 ## Flow
 
