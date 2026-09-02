@@ -55,10 +55,13 @@ skills banner:
 - `qa-blackbox`
 - `frontend-design`
 - `verification-before-completion`
+- `qa-text-check`
 
 These skills live locally in `.agents/skills/` — no plugin installation
 needed. The Playwright MCP (`mcp__playwright__*`) loads automatically from
-`.claude/settings.local.json`.
+`.claude/settings.local.json`. Unlike the other three, `qa-text-check`
+only runs when explicitly invoked with `/qa-text-check` — it does not
+trigger automatically.
 
 ---
 
@@ -69,6 +72,7 @@ needed. The Playwright MCP (`mcp__playwright__*`) loads automatically from
 | `qa-blackbox` skill | `.agents/skills/qa-blackbox/` | Quality dimensions, scoring model, report format |
 | `frontend-design` skill | `.agents/skills/frontend-design/` | Visual/UX audit: typography, contrast, layout, accessibility |
 | `verification-before-completion` skill | `.agents/skills/verification-before-completion/` | Requires real evidence before claiming work complete |
+| `qa-text-check` skill | `.agents/skills/qa-text-check/` | Manual-only: typo, grammar, mixed-language, and punctuation bugs (es/en) |
 | Playwright MCP | `npx @playwright/mcp@latest` (auto-fetched) | Browser navigation, screenshots, accessibility tree inspection |
 
 ---
@@ -91,6 +95,29 @@ scenario checklist, report format).
 
 ---
 
+## Running a Text QA Check
+
+Unlike `qa-blackbox`, this does **not** run automatically — invoke it
+explicitly:
+
+> `/qa-text-check <url-or-flow> --lang=es|en`
+
+Optionally pass `--pages=<screen list>` to name the screens to visit;
+otherwise Claude asks which screens or flow to cover. Claude will:
+1. Verify Playwright MCP is connected
+2. Visit each screen, extract visible UI text, and take one
+   evidence screenshot per screen — running as a background task
+   instead of inline when the scope covers more than 5 screens
+3. Report only high-confidence typo/grammar/mixed-language/
+   punctuation issues
+4. Save `text-qa-report.md` to the same evidence folder structure
+   used by `qa-blackbox`
+
+See [`.agents/skills/qa-text-check/SKILL.md`](./.agents/skills/qa-text-check/SKILL.md)
+for the full protocol.
+
+---
+
 ## Project Structure
 
 ```
@@ -99,7 +126,8 @@ qa-agent/
 │   └── skills/
 │       ├── qa-blackbox/SKILL.md
 │       ├── frontend-design/SKILL.md
-│       └── verification-before-completion/SKILL.md
+│       ├── verification-before-completion/SKILL.md
+│       └── qa-text-check/SKILL.md
 ├── .claude/
 │   ├── settings.local.json.example   # copy to settings.local.json
 │   └── settings.local.json           # gitignored, created locally
