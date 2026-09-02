@@ -30,6 +30,18 @@ skills banner: `qa-blackbox`, `qa-text-check`, `frontend-design`,
 from `anthropics/skills` and `obra/superpowers` respectively) — see
 `CLAUDE.md` for the full protocol.
 
+## Project Context (OpenKnowledge)
+
+This repo's `context/` directory is an [OpenKnowledge](https://github.com/inkeep/open-knowledge)
+project once initialized. The first time you use a project repo created
+from this template, run `/qa-project-setup` — it runs `ok init` for you
+and then walks you through filling in `context/navigation-map.md` and
+`context/regression-flows.md` with your project's specifics.
+
+You do not need to run `ok init` yourself, and this template repo does
+not ship with `.ok/` already created — `qa-project-setup` creates it the
+first time, scoped to your new project repo.
+
 ## Quickstart — e2e-tests
 
 ```bash
