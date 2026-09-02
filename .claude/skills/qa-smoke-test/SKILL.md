@@ -43,11 +43,13 @@ From the ticket's title/description/acceptance criteria, identify:
 - What the acceptance criteria say should work.
 
 Optionally read `.env` via `Bash` (same method as `qa-blackbox`: source
-it, never `Read` it or print its contents) for `BASE_URL`, and check
-`context/navigation-map.md`'s `## Site Structure` section — this skill
-benefits from both but does not require either (a smoke test can
-proceed with a URL the user provides directly if `.env` isn't configured
-yet).
+it, never `Read` it or print its contents) for `BASE_URL` and, if the
+ticket's feature is behind a login, `TEST_USER_EMAIL`/`TEST_USER_PASSWORD`
+to log in as the test user — never invent or guess a credential. Also
+check `context/navigation-map.md`'s `## Site Structure` section — this
+skill benefits from all of this but does not require it (a smoke test
+can proceed with a URL and manual login steps the user provides
+directly if `.env` isn't configured yet).
 
 Run a focused set of checks against just this feature: does it match
 each acceptance criterion, does the happy path work, and a light pass on
