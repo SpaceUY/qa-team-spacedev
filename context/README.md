@@ -8,7 +8,7 @@ session.
 
 | File | Filled in by | Read by | Written by |
 |------|---------------|---------|------------|
-| `navigation-map.md` | `qa-project-setup` | `qa-blackbox` | `qa-project-setup` |
+| `navigation-map.md` | `qa-project-setup` | `qa-blackbox`, `qa-smoke-test` (optional/best-effort) | `qa-project-setup` |
 | `regression-flows.md` | `qa-project-setup` | `qa-regression` | `qa-project-setup`, `qa-smoke-test`, `qa-regression` |
 
 If this directory's files are still empty templates, run `/qa-project-setup`

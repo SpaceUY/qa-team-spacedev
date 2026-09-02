@@ -30,8 +30,10 @@ claude
 Then tell Claude: *"Navigate to `<URL>` and test the `<flow>` flow."*
 
 At session start, the following skills should appear in the available
-skills banner: `qa-blackbox`, `qa-text-check`, `frontend-design`,
-`verification-before-completion`. The first two live in this repo's
+skills banner: `qa-blackbox`, `qa-text-check`, `qa-project-setup`,
+`qa-smoke-test`, `qa-regression`, `report-bugs-to-clickup`,
+`report-improvements-to-clickup`, `frontend-design`,
+`verification-before-completion`. The first seven live in this repo's
 `.claude/skills/`; the latter two are Claude Code plugin skills (sourced
 from `anthropics/skills` and `obra/superpowers` respectively) — see
 `CLAUDE.md` for the full protocol.
@@ -58,6 +60,41 @@ otherwise Claude asks which screens or flow to cover. Claude will:
 
 See [`.claude/skills/qa-text-check/SKILL.md`](./.claude/skills/qa-text-check/SKILL.md)
 for the full protocol.
+
+## Setting Up a New Project
+
+The first time you use a project repo created from this template, run:
+
+> `/qa-project-setup`
+
+Claude will run `ok init` if needed, then walk you through filling in
+`context/navigation-map.md` (base URL, site structure, test credentials
+reference, known non-bug quirks) and `context/regression-flows.md`
+(this product's core end-to-end flows). Re-run it any time the app's
+structure or core flows change — it edits existing content, it doesn't
+overwrite it.
+
+## Running Smoke Tests
+
+For a specific ClickUp ticket, invoke:
+
+> `/qa-smoke-test <ticket link or ID>`
+
+Claude fetches the ticket fresh from ClickUp, runs a focused set of
+checks scoped to that ticket's feature (not the full `qa-blackbox`
+protocol), and — at the end of every run — asks whether this flow should
+be added to or update `context/regression-flows.md`, so the regression
+set stays current as features ship.
+
+## Running Regression Tests
+
+To execute every documented core flow end-to-end:
+
+> `/qa-regression`
+
+Claude reads `context/regression-flows.md`, runs each flow's steps with
+its test data, records any bugs found, and updates each passing flow's
+last-successful-run date.
 
 ## Project Context (OpenKnowledge)
 
@@ -127,41 +164,6 @@ See
 `docs/superpowers/specs/2026-09-01-report-improvements-to-clickup-design.md`
 for the full design, including the fixed-List-plus-sprint-association
 model both skills share.
-
-## Setting Up a New Project
-
-The first time you use a project repo created from this template, run:
-
-> `/qa-project-setup`
-
-Claude will run `ok init` if needed, then walk you through filling in
-`context/navigation-map.md` (base URL, site structure, test credentials
-reference, known non-bug quirks) and `context/regression-flows.md`
-(this product's core end-to-end flows). Re-run it any time the app's
-structure or core flows change — it edits existing content, it doesn't
-overwrite it.
-
-## Running Smoke Tests
-
-For a specific ClickUp ticket, invoke:
-
-> `/qa-smoke-test <ticket link or ID>`
-
-Claude fetches the ticket fresh from ClickUp, runs a focused set of
-checks scoped to that ticket's feature (not the full `qa-blackbox`
-protocol), and — at the end of every run — asks whether this flow should
-be added to or update `context/regression-flows.md`, so the regression
-set stays current as features ship.
-
-## Running Regression Tests
-
-To execute every documented core flow end-to-end:
-
-> `/qa-regression`
-
-Claude reads `context/regression-flows.md`, runs each flow's steps with
-its test data, records any bugs found, and updates each passing flow's
-last-successful-run date.
 
 ## Project Structure
 
