@@ -56,8 +56,18 @@ For each flow, in order:
    Take an evidence screenshot at the happy-path completion of the flow,
    and at the moment any step fails, following the same
    `evidence/{hostname}/{subpath}/{YYYY-MM-DD}/` convention as the other
-   skills (`CLAUDE.md` § "📁 Evidence Structure"). Use the flow's name,
-   slugified, as the `{subpath}` segment.
+   skills (`CLAUDE.md` § "📁 Evidence Structure"). Derive `{subpath}` and
+   `{hostname}` the same way `qa-blackbox`/`qa-smoke-test` do — from a
+   URL, not the flow's display name: find the first route or URL named
+   in the flow's own `**Steps:**` (the page the flow starts on — if the
+   flow spans multiple pages, use the first one its steps visit, since
+   that's how the flow "starts"), then apply `CLAUDE.md`'s naming rules
+   to it exactly (`{subpath}` = that URL's first path segment, no `/`,
+   e.g. `/register` → `register`, or `root` if it's `/`; `{hostname}` =
+   that URL's domain + port with `:`/`.` → `-`). Never slugify the
+   flow's name — a flow called "Registration → First Purchase" is not a
+   valid `{subpath}`/`{hostname}` source, only its steps' actual route
+   is.
 2. If a step fails, record it as a bug (same severity vocabulary as
    `qa-blackbox`: 🔴 High / 🟡 Medium / 🟢 Low) and continue to the next
    flow — one flow's failure does not abort the rest of the regression
@@ -94,10 +104,12 @@ one `qa-report.md` per flow, plus one session-level summary.
 
 For each flow that was run, write
 `evidence/{hostname}/{subpath}/{YYYY-MM-DD}/qa-report.md` — using the
-flow's name, slugified, as `{subpath}` (the same folder Step 3's
-screenshots were saved into) — in the same 4-column Bug Register
-format as `qa-blackbox` (`ID | Severity | Description | Evidence`), so
-`report-bugs-to-clickup` can parse each one without any changes:
+same `{hostname}`/`{subpath}` derivation as Step 3 (from the flow's
+first-visited route, per `CLAUDE.md`'s naming rules, never the flow's
+display name slugified) — the same folder Step 3's screenshots were
+saved into — in the same 4-column Bug Register format as `qa-blackbox`
+(`ID | Severity | Description | Evidence`), so `report-bugs-to-clickup`
+can parse each one without any changes:
 
 ```markdown
 # QA Report — {Flow name}
@@ -122,6 +134,14 @@ format as `qa-blackbox` (`ID | Severity | Description | Evidence`), so
 
 ---
 
+## Recommended Actions
+
+### Must Fix
+- ...
+
+### Nice to Have
+- ...
+
 ## Evidence Files
 
 | File | Description |
@@ -135,11 +155,27 @@ Register table (header row only) plus an explicit sentence such as "No
 issues found for this flow." — never skip writing a flow's report
 because there was nothing to find.
 
+Always include the `## Recommended Actions` section with its
+`### Must Fix` and `### Nice to Have` subsections, matching
+`qa-blackbox`'s report template's heading structure. Write each item
+under both subsections as a `-` bullet (not a numbered list) with no
+blank markdown divider (`---`) directly between the bullets and the
+next heading — `/report-improvements-to-clickup`'s parser reads
+`### Nice to Have`'s bullets by scanning lines that start with `-` until
+the next heading, and a stray `---` divider line also starts with `-`
+and would be misread as a bogus bullet. If a flow surfaced nothing
+worth suggesting as a low-priority improvement, still write
+`### Nice to Have` with a single bullet stating that, e.g.
+`- None for this run.` — never leave it with zero bullet items, since
+the parser requires at least one.
+
 After every run flow has its own report, write a session-level summary
-at the hostname root, following the same `AUDIT-SUMMARY-{YYYY-MM-DD}.md`
-format `qa-blackbox`'s Full Site Audit uses:
-`evidence/{hostname}/AUDIT-SUMMARY-{YYYY-MM-DD}.md`, listing each run
-flow with its status (PASS/FAIL, matching each flow's own `qa-report.md`
+at the hostname root — using the same `{hostname}` derivation as Step 3
+(from the first run flow's URL, per `CLAUDE.md`'s naming rules, since a
+regression session as a whole has no single URL of its own) — following
+the same `AUDIT-SUMMARY-{YYYY-MM-DD}.md` format `qa-blackbox`'s Full
+Site Audit uses: `evidence/{hostname}/AUDIT-SUMMARY-{YYYY-MM-DD}.md`,
+listing each run flow with its status (PASS/FAIL, matching each flow's own `qa-report.md`
 — `qa-regression` doesn't compute a numeric quality score, only
 `qa-blackbox` does) and critical bug count, any cross-cutting issues
 observed across flows, and a priority fix list ranked by severity

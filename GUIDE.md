@@ -68,6 +68,14 @@ Edit `.env` and set:
 - `API_KEY` — only if your site needs one; leave it commented out
   otherwise.
 
+**Single-quote every value** (e.g. `TEST_USER_PASSWORD='p@ss word!'`).
+The testing skills read `.env` by having the shell `source` it, not by
+parsing it as plain key/value pairs — so an unquoted value containing a
+space is silently cut short, and an unquoted value containing `$`,
+backticks, `;`, or `&` runs as a shell command instead of being treated
+as a literal credential. `.env.example` already shows every value
+quoted; keep that quoting when you fill in real values.
+
 **`.env` is gitignored — it is never committed, and you should never
 paste its contents into a chat message.** Every testing skill below
 reads it directly; you only fill it in once per project (update it

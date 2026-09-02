@@ -2,7 +2,7 @@
 name: qa-smoke-test
 description: Focused smoke test of one ClickUp ticket's feature — fetches ticket context fresh from ClickUp, runs a scoped set of checks against that feature, and offers to add/update the tested flow in context/regression-flows.md. Invoke manually with a ticket link or ID.
 user-invocable: true
-allowed-tools: Read, Write, Edit, AskUserQuestion, mcp__claude_ai_ClickUp__clickup_get_task, mcp__claude_ai_ClickUp__clickup_search
+allowed-tools: Read, Write, Edit, AskUserQuestion, Bash, mcp__claude_ai_ClickUp__clickup_get_task, mcp__claude_ai_ClickUp__clickup_search
 ---
 
 # qa-smoke-test — Focused Smoke Test from a ClickUp Ticket
@@ -45,7 +45,10 @@ From the ticket's title/description/acceptance criteria, identify:
 Optionally read `.env` via `Bash` (same method as `qa-blackbox`: source
 it, never `Read` it or print its contents) for `BASE_URL` and, if the
 ticket's feature is behind a login, `TEST_USER_EMAIL`/`TEST_USER_PASSWORD`
-to log in as the test user — never invent or guess a credential. Also
+to log in as the test user — never invent or guess a credential. Sourcing
+is shell evaluation, so every `.env` value must be single-quoted (see
+`.env.example`) — an unquoted value with a space, `$`, backtick, `;`, or
+`&` will be truncated or executed instead of read literally. Also
 check `context/navigation-map.md`'s `## Site Structure` section — this
 skill benefits from all of this but does not require it (a smoke test
 can proceed with a URL and manual login steps the user provides
@@ -102,6 +105,14 @@ changes:
 
 ---
 
+## Recommended Actions
+
+### Must Fix
+- ...
+
+### Nice to Have
+- ...
+
 ## Evidence Files
 
 | File | Description |
@@ -113,6 +124,20 @@ The title line must read exactly `# QA Report — {Tested flow}` (em
 dash), matching `report-bugs-to-clickup`'s required header format —
 use the ticket's title (or a short feature name derived from it) as
 `{Tested flow}`.
+
+Always include the `## Recommended Actions` section with its
+`### Must Fix` and `### Nice to Have` subsections, matching
+`qa-blackbox`'s report template's heading structure. Write each item
+under both subsections as a `-` bullet (not a numbered list) with no
+blank markdown divider (`---`) directly between the bullets and the
+next heading — `/report-improvements-to-clickup`'s parser reads
+`### Nice to Have`'s bullets by scanning lines that start with `-` until
+the next heading, and a stray `---` divider line also starts with `-`
+and would be misread as a bogus bullet. If this smoke test surfaced
+nothing worth suggesting as a low-priority improvement, still write the
+subsection with a single bullet stating that, e.g.
+`- None for this run.` — never leave `### Nice to Have` with zero
+bullet items, since the parser requires at least one.
 
 If **no bugs** were found, still write the report: an empty Bug
 Register table (header row only) plus an explicit sentence such as "No

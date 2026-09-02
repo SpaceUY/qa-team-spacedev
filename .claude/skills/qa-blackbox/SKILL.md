@@ -2,7 +2,7 @@
 name: qa-blackbox
 description: Black-box QA skill for browser-based testing without source code access. Defines quality dimensions, scoring model, and report format for end-user perspective testing using Playwright MCP.
 user-invocable: true
-allowed-tools: Write, Read, AskUserQuestion
+allowed-tools: Write, Read, AskUserQuestion, Bash
 ---
 
 # qa-blackbox — Black-Box Browser QA
@@ -20,9 +20,13 @@ you're unsure of the repo root from your current working directory):
 **`.env`** — read it via `Bash` (e.g. `set -a && source .env && set +a`,
 then reference `$BASE_URL`, `$TEST_USER_EMAIL`, `$TEST_USER_PASSWORD`),
 never by opening it with `Read` and never by printing its contents into
-the conversation or into any report. If `.env` doesn't exist, or
-`BASE_URL` comes out empty, tell the user to copy `.env.example` to
-`.env` and fill it in (or run `/qa-project-setup`, which reminds them to
+the conversation or into any report. Sourcing is shell evaluation, not
+plain-text parsing — it requires every `.env` value to be single-quoted
+(`.env.example` already shows this); an unquoted value with a space is
+silently truncated, and one with `$`, backticks, `;`, or `&` executes as
+a command instead of being read as a literal credential. If `.env`
+doesn't exist, or `BASE_URL` comes out empty, tell the user to copy
+`.env.example` to `.env` and fill it in (or run `/qa-project-setup`, which reminds them to
 do this), and ask whether to proceed anyway with a cold-start session
 (no base URL, prompting the user for one manually) or stop and wait.
 `BASE_URL` is what you navigate to; `TEST_USER_EMAIL`/`TEST_USER_PASSWORD`

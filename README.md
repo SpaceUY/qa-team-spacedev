@@ -29,7 +29,7 @@ files executed by a CLI).
 ```bash
 npx playwright install chromium   # one-time
 cp .claude/settings.local.json.example .claude/settings.local.json
-cp .env.example .env   # then fill in BASE_URL and test credentials
+cp .env.example .env   # then fill in BASE_URL and test credentials (keep every value single-quoted — see below)
 claude
 ```
 
@@ -74,11 +74,13 @@ The first time you use a project repo created from this template, run:
 > `/qa-project-setup`
 
 Claude will run `ok init` if needed, then walk you through filling in
-`context/navigation-map.md` (base URL, site structure, test credentials
-reference, known non-bug quirks) and `context/regression-flows.md`
-(this product's core end-to-end flows). Re-run it any time the app's
-structure or core flows change — it edits existing content, it doesn't
-overwrite it.
+`context/navigation-map.md` (site structure, known non-bug quirks) and
+`context/regression-flows.md` (this product's core end-to-end flows).
+Base URL and test credentials live in `.env`, not `navigation-map.md` —
+`qa-project-setup` reminds you to configure `.env` too (see
+"Credentials (`.env`)" below) but never writes secrets into any tracked
+file. Re-run it any time the app's structure or core flows change — it
+edits existing content, it doesn't overwrite it.
 
 ## Running Smoke Tests
 
@@ -123,8 +125,12 @@ cp .env.example .env
 ```
 
 Fill in `BASE_URL`, `TEST_USER_EMAIL`, `TEST_USER_PASSWORD` (and
-`API_KEY` if your project needs one). `.env` is gitignored — never
-commit it or paste its contents into chat. See
+`API_KEY` if your project needs one), **single-quoting every value**
+(e.g. `TEST_USER_PASSWORD='p@ss word!'`) — the QA skills read `.env` via
+the shell (`source .env`), so an unquoted value with a space, `$`,
+backtick, `;`, or `&` will either get silently truncated or executed as
+a command instead of read as a literal credential. `.env` is gitignored
+— never commit it or paste its contents into chat. See
 [`GUIDE.md`](./GUIDE.md#3-configure-env) for details.
 
 ## Quickstart — e2e-tests
