@@ -139,9 +139,11 @@ After every run flow has its own report, write a session-level summary
 at the hostname root, following the same `AUDIT-SUMMARY-{YYYY-MM-DD}.md`
 format `qa-blackbox`'s Full Site Audit uses:
 `evidence/{hostname}/AUDIT-SUMMARY-{YYYY-MM-DD}.md`, listing each run
-flow with its score/status and critical bug count, any cross-cutting
-issues observed across flows, and a priority fix list ranked by
-severity across all flows. If the summary file for today already
+flow with its status (PASS/FAIL, matching each flow's own `qa-report.md`
+— `qa-regression` doesn't compute a numeric quality score, only
+`qa-blackbox` does) and critical bug count, any cross-cutting issues
+observed across flows, and a priority fix list ranked by severity
+across all flows. If the summary file for today already
 exists (e.g. a Full Site Audit already ran today), add this run's
 flows to it rather than overwriting.
 
