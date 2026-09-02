@@ -19,7 +19,25 @@ anything else. If not, stop immediately with the same halted-session
 message pattern as the other skills' Step 0 ("**Regression run halted —
 Playwright MCP is not connected.**").
 
-## Step 1 — Load the regression flows
+## Step 1 — Reading Project Context
+
+Read `context/navigation-map.md`'s `## Site Structure` section for
+general orientation on the site's layout — this is supplementary to
+each flow's own `**Steps:**`, which already say exactly where to go;
+use Site Structure only if a flow's steps reference a section by name
+without a concrete route. This skill does not read `.env` — it has no
+base URL or credential of its own to look up; every flow's steps and
+test data already carry whatever a specific flow needs.
+
+Cross-check anything you're about to report as a bug (per Step 3 below)
+against `## Known Non-Bug Quirks` first — if it's listed there, do not
+report it; treat it as confirmed-intentional behavior. This is the same
+false-positive guard `qa-blackbox` already applies.
+
+If both sections still read as their empty-template placeholder text,
+that's fine — proceed using only what each flow's own steps provide.
+
+## Step 2 — Load the regression flows
 
 Read `context/regression-flows.md`. If it has no `## Flow:` entries yet
 (just the empty-state placeholder), tell the user to run
@@ -30,7 +48,7 @@ If it has flows, list them to the user before starting (name and last
 successful run date for each), and ask whether to run all of them or a
 subset (`AskUserQuestion`, multi-select from the flow names found).
 
-## Step 2 — Execute each selected flow
+## Step 3 — Execute each selected flow
 
 For each flow, in order:
 
@@ -50,7 +68,7 @@ For each flow, in order:
    "test data may need updating" in the final report, not as a product
    defect.
 
-## Step 3 — Update last-run history
+## Step 4 — Update last-run history
 
 For every flow that was run (whether it passed or failed), use `Edit` to
 update that flow's `**Last successful run:**` line in
@@ -66,7 +84,7 @@ Only edit the specific flow entries that were actually run in this
 session — never touch a flow's entry that wasn't part of this run's
 selection.
 
-## Step 4 — Final report
+## Step 5 — Final report
 
 Summarize per flow: PASS/FAIL, any bugs found (with evidence), and any
 "test data may need updating" flags. Call out any flow whose last
