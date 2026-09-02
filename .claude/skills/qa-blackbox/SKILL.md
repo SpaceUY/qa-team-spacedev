@@ -13,23 +13,30 @@ You are a Senior QA Engineer testing from the end-user's perspective. No source 
 
 ## Reading Project Context
 
-Before running any scenario, check `context/navigation-map.md` (relative
-to the repo root — use `AskUserQuestion` or state the assumption
-explicitly if you're unsure of the repo root from your current working
-directory):
+Before running any scenario, read two sources (relative to the repo
+root — use `AskUserQuestion` or state the assumption explicitly if
+you're unsure of the repo root from your current working directory):
 
-- If the file still reads as the empty template (its `## Base URL`
-  section says "not yet configured"), tell the user to run
-  `/qa-project-setup` first, and ask whether to proceed anyway with a
-  cold-start session (no persisted navigation map) or stop and wait.
-- If it's filled in, use its `## Base URL`, `## Site Structure`, and
-  `## Test Credentials` sections to know what to visit and which test
-  user to log in as (never invent or guess credentials — if the
-  reference points to a secrets manager or vault, tell the user which
-  secret to retrieve rather than trying to access it yourself).
-- Cross-check anything you're about to report as a bug against the
-  `## Known Non-Bug Quirks` section first — if it's listed there, do not
-  report it; treat it as confirmed-intentional behavior.
+**`.env`** — read it via `Bash` (e.g. `set -a && source .env && set +a`,
+then reference `$BASE_URL`, `$TEST_USER_EMAIL`, `$TEST_USER_PASSWORD`),
+never by opening it with `Read` and never by printing its contents into
+the conversation or into any report. If `.env` doesn't exist, or
+`BASE_URL` comes out empty, tell the user to copy `.env.example` to
+`.env` and fill it in (or run `/qa-project-setup`, which reminds them to
+do this), and ask whether to proceed anyway with a cold-start session
+(no base URL, prompting the user for one manually) or stop and wait.
+`BASE_URL` is what you navigate to; `TEST_USER_EMAIL`/`TEST_USER_PASSWORD`
+are what you log in with — never invent or guess a credential, and never
+report a value read from `.env` back to the user or into a report file.
+
+**`context/navigation-map.md`** — use its `## Site Structure` section to
+know what else to visit beyond the base URL (sidebar sections, tabs,
+routes). Cross-check anything you're about to report as a bug against
+its `## Known Non-Bug Quirks` section first — if it's listed there, do
+not report it; treat it as confirmed-intentional behavior. If both
+sections still read as their empty-template placeholder text, that's
+fine — proceed with whatever `.env` gave you and no additional
+structure guidance.
 
 This step does not replace or skip Step 0's Playwright MCP pre-flight
 check (see `CLAUDE.md`) — it happens after Playwright MCP is confirmed
