@@ -92,7 +92,12 @@ ticket seems minor — let the user decide, don't decide for them.
 - If **Update**: ask the user which existing `## Flow:` entry to update,
   read its current content, and use `Edit` to change only what the user
   says changed (a step, a test-data value, a URL) — never rewrite the
-  whole entry from scratch.
+  whole entry from scratch. Also update that entry's
+  `**Last successful run:**` line: set it to today's date if the smoke
+  test passed, or leave it unchanged (do not overwrite a real prior
+  date with `never run`) if the smoke test failed — the same
+  pass/fail rule the **Add** path above uses, applied to an existing
+  entry instead of a new one.
 - If **Skip**: do nothing further to `context/regression-flows.md`.
 
 ## Constraints
