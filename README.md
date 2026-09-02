@@ -5,25 +5,30 @@ pick the one that fits what you're doing:
 
 | Module | What it is | When to use it |
 |--------|------------|-----------------|
-| [`qa-agent/`](./qa-agent) | Claude Code + Playwright MCP black-box QA agent. Claude drives a real browser, runs a standard scenario checklist, and writes a markdown report with screenshots. No test code involved. | Interactive/exploratory QA sessions — auditing a flow or a whole site, ad hoc bug hunting, generating an evidence report to share. |
+| `qa-agent` | Claude Code + Playwright MCP black-box QA agent — run from the repo root | Interactive/exploratory QA sessions — auditing a flow or a whole site, ad hoc bug hunting, generating an evidence report to share. |
 | [`e2e-tests/`](./e2e-tests) | Traditional [Playwright Test](https://playwright.dev/docs/test-intro) suite (`.spec.ts`), runs via `npx playwright test`. | Automated regression testing you want versioned in code and run in CI on every PR. |
 
 Both modules use [Playwright](https://playwright.dev/) under the hood, but
-in different modes: `qa-agent/` uses the Playwright **MCP server** (browser
+in different modes: the QA agent uses the Playwright **MCP server** (browser
 control exposed as tools Claude calls directly), while `e2e-tests/` uses the
 Playwright **Test runner** (compiled `.spec.ts` files executed by a CLI).
 
-## Quickstart — qa-agent
+## Quickstart — QA Agent
 
 ```bash
-cd qa-agent
 npx playwright install chromium   # one-time
 cp .claude/settings.local.json.example .claude/settings.local.json
 claude
 ```
 
 Then tell Claude: *"Navigate to `<URL>` and test the `<flow>` flow."*
-See [`qa-agent/README.md`](./qa-agent/README.md) for details.
+
+At session start, the following skills should appear in the available
+skills banner: `qa-blackbox`, `qa-text-check`, `frontend-design`,
+`verification-before-completion`. The first two live in this repo's
+`.claude/skills/`; the latter two are Claude Code plugin skills (sourced
+from `anthropics/skills` and `obra/superpowers` respectively) — see
+`CLAUDE.md` for the full protocol.
 
 ## Quickstart — e2e-tests
 
@@ -40,7 +45,7 @@ how to add specs for a new project.
 ## CI
 
 `.github/workflows/e2e.yml` runs the `e2e-tests/` suite on every pull
-request and on pushes to `main`. The `qa-agent/` module is interactive-only
+request and on pushes to `main`. The QA agent is interactive-only
 and does not run in CI.
 
 ## Reporting bugs to ClickUp
@@ -81,3 +86,36 @@ See
 `docs/superpowers/specs/2026-09-01-report-improvements-to-clickup-design.md`
 for the full design, including the fixed-List-plus-sprint-association
 model both skills share.
+
+## Troubleshooting
+
+**Playwright MCP tools (`mcp__playwright__*`) not available — session halted**
+
+Claude Code will refuse to start any QA session if the Playwright MCP is
+not connected:
+
+> QA session halted — Playwright MCP is not connected.
+
+Fix checklist:
+1. Verify `.claude/settings.local.json` exists and contains the
+   `mcpServers.playwright` entry (copy it from `.example` if missing).
+2. Run `/mcp` inside Claude Code to reconnect MCP servers without
+   restarting.
+3. Confirm `npx @playwright/mcp@latest` runs without errors in your
+   terminal.
+4. If nothing works, close and reopen Claude Code.
+
+Do **not** attempt to work around a missing Playwright MCP by writing
+scripts. Claude is configured to refuse this (see `CLAUDE.md`).
+
+**Skills not showing up at session start**
+
+- Verify the `.claude/skills/` directory exists and contains the
+  `SKILL.md` files.
+- Close and reopen Claude Code — skills load at session start only.
+
+**Browser not found when MCP starts**
+
+```bash
+npx playwright install chromium
+```
