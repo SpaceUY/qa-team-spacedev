@@ -4,7 +4,7 @@
 
 **Goal:** Move site credentials (base URL, test user credentials, optional API key) out of `context/navigation-map.md`'s reference-only model into a real, gitignored `.env` file that skills read directly, and add a single narrative `GUIDE.md` a tester reads once end-to-end (clone → context mapping → `.env` → testing skills → reports/tickets) — then validate the whole chain by walking through it for real.
 
-**Architecture:** `.env.example` is committed with placeholders; `.env` is gitignored and holds real values. `context/navigation-map.md`'s template drops its `## Base URL` and `## Test Credentials` sections (secrets no longer live there even as references) and keeps only `## Site Structure` and `## Known Non-Bug Quirks`. `qa-project-setup`, `qa-blackbox`, and `qa-smoke-test` are edited to read `.env` instead of those two removed sections; `qa-regression` is unaffected (it never read `navigation-map.md`). `GUIDE.md` is new, root-level, narrative; `README.md` gets a prominent link to it near the top.
+**Architecture:** `.env.example` is committed with placeholders; `.env` is gitignored and holds real values. `context/navigation-map.md`'s template drops its `## Base URL` and `## Test Credentials` sections (secrets no longer live there even as references) and keeps only `## Site Structure` and `## Known Non-Bug Quirks`. `qa-project-setup`, `qa-blackbox`, and `qa-smoke-test` are edited to read `.env` instead of those two removed sections. `qa-regression` gains a new "read project context" step of its own — it starts reading `context/navigation-map.md`'s `## Site Structure` and `## Known Non-Bug Quirks` sections (same false-positive guard `qa-blackbox` has), but does NOT read `.env` — it never needed a base URL or credentials, since each flow entry in `regression-flows.md` already carries its own steps and test data. `GUIDE.md` is new, root-level, narrative; `README.md` gets a prominent link to it near the top.
 
 **Tech Stack:** Markdown skill definitions (instructions-only, no executable code), a `.env` file read via `Bash` (`source`) by the skills that need it, no new dependencies.
 
@@ -15,7 +15,7 @@
 - `context/navigation-map.md`'s template keeps only `## Site Structure` and `## Known Non-Bug Quirks` — `## Base URL` and `## Test Credentials` are removed entirely, not merely deprecated (spec, "`context/navigation-map.md`'s template changes").
 - `qa-project-setup` never writes real credential values into any file — it only checks whether `.env` exists and guides the user to create/fill it by hand (spec, "Skill changes"). This is a *stronger* rule than before: previously it wrote a credential *reference* into `navigation-map.md`; now it writes nothing about credentials at all.
 - No skill ever prints `.env`'s contents into the conversation transcript or into any report file (spec, "Security rule, all of the above").
-- `qa-regression` is NOT modified in this plan — it has never read `navigation-map.md` and has no reason to read `.env` either (confirmed by reading its current SKILL.md before writing this plan: it only reads `context/regression-flows.md`, where each flow's own steps carry whatever URL/data it needs).
+- `qa-regression` gains a "read project context" step (Task 5b, added after user feedback during implementation) that reads `context/navigation-map.md`'s `## Site Structure` and `## Known Non-Bug Quirks` sections, mirroring `qa-blackbox`'s equivalent step — but it does NOT read `.env`: it never needed a base URL or credentials of its own (confirmed by reading its current SKILL.md before writing this plan: it only reads `context/regression-flows.md`, where each flow's own steps carry whatever URL/data it needs), and that stays true after this change.
 - `README.md` becomes a short technical quickstart with a prominent link to `GUIDE.md` — the narrative content moves to `GUIDE.md`, not duplicated in both (spec, "Part 2").
 - The plan's final task must validate the whole chain against a real or realistic site by actually walking `GUIDE.md` step by step — not just confirm each file reads correctly in isolation (spec, "Validation goal for this iteration").
 
@@ -579,13 +579,125 @@ git commit -m "feat: qa-smoke-test optionally reads .env for BASE_URL instead of
 
 ---
 
+### Task 5b: `qa-regression` reads `context/navigation-map.md`
+
+**Files:**
+- Modify: `.claude/skills/qa-regression/SKILL.md`
+
+**Interfaces:**
+- Consumes: `context/navigation-map.md`'s two-section template (`## Site Structure`, `## Known Non-Bug Quirks`) from Task 2.
+- Produces: nothing new consumed by later tasks.
+
+**Why this task exists separately, added mid-plan:** the original design for this iteration only touched `qa-project-setup`, `qa-blackbox`, and `qa-smoke-test` — `qa-regression` was believed to have no reason to read `navigation-map.md`, since each flow entry in `regression-flows.md` already carries its own steps and test data. User feedback during implementation pointed out this was an inconsistency: `qa-blackbox` cross-checks findings against `## Known Non-Bug Quirks` before reporting a bug, but `qa-regression` — which also finds and reports bugs while running a flow — never did the same check. This task closes that gap. It does **not** add `.env` reading to `qa-regression` — that part of the original design was correct and stays unchanged: `qa-regression` still has no need for a base URL or credentials of its own.
+
+- [ ] **Step 1: Read the current file and locate the insertion point**
+
+```bash
+cd /Users/juliadisarli/Documents/GitHub/qa-team
+grep -n "^## " .claude/skills/qa-regression/SKILL.md
+```
+
+Expected current headings, in order: `## Step 0 — Pre-flight: verify Playwright MCP`, `## Step 1 — Load the regression flows`, `## Step 2 — Execute each selected flow`, `## Step 3 — Update last-run history`, `## Step 4 — Final report`, `## Constraints`. Insert the new context-reading step between Step 0 and Step 1 — after Playwright MCP is confirmed available, before flows are loaded — mirroring where `qa-blackbox`'s "Reading Project Context" section sits relative to its own Step 0.
+
+- [ ] **Step 2: Insert the new step, and renumber the rest**
+
+Find this exact block (the boundary between the current Step 0 and Step 1):
+
+```markdown
+## Step 0 — Pre-flight: verify Playwright MCP
+
+Same check as `qa-blackbox`, `qa-text-check`, and `qa-smoke-test`:
+confirm `mcp__playwright__browser_navigate` is available before doing
+anything else. If not, stop immediately with the same halted-session
+message pattern as the other skills' Step 0 ("**Regression run halted —
+Playwright MCP is not connected.**").
+
+## Step 1 — Load the regression flows
+```
+
+Replace it with:
+
+```markdown
+## Step 0 — Pre-flight: verify Playwright MCP
+
+Same check as `qa-blackbox`, `qa-text-check`, and `qa-smoke-test`:
+confirm `mcp__playwright__browser_navigate` is available before doing
+anything else. If not, stop immediately with the same halted-session
+message pattern as the other skills' Step 0 ("**Regression run halted —
+Playwright MCP is not connected.**").
+
+## Step 1 — Reading Project Context
+
+Read `context/navigation-map.md`'s `## Site Structure` section for
+general orientation on the site's layout — this is supplementary to
+each flow's own `**Steps:**`, which already say exactly where to go;
+use Site Structure only if a flow's steps reference a section by name
+without a concrete route. This skill does not read `.env` — it has no
+base URL or credential of its own to look up; every flow's steps and
+test data already carry whatever a specific flow needs.
+
+Cross-check anything you're about to report as a bug (per Step 3 below)
+against `## Known Non-Bug Quirks` first — if it's listed there, do not
+report it; treat it as confirmed-intentional behavior. This is the same
+false-positive guard `qa-blackbox` already applies.
+
+If both sections still read as their empty-template placeholder text,
+that's fine — proceed using only what each flow's own steps provide.
+
+## Step 2 — Load the regression flows
+```
+
+- [ ] **Step 3: Renumber the remaining steps**
+
+The file's current "Step 2" (Execute each selected flow) becomes
+"Step 3", current "Step 3" (Update last-run history) becomes "Step 4",
+and current "Step 4" (Final report) becomes "Step 5". Update each
+heading line and every internal cross-reference to a step number:
+
+```bash
+cd /Users/juliadisarli/Documents/GitHub/qa-team
+grep -n "Step [0-4]" .claude/skills/qa-regression/SKILL.md
+```
+
+Read the matches and update:
+- `## Step 2 — Execute each selected flow` → `## Step 3 — Execute each selected flow`
+- `## Step 3 — Update last-run history` → `## Step 4 — Update last-run history`
+- `## Step 4 — Final report` → `## Step 5 — Final report`
+- Any internal prose reference to "Step 3" (the old "Update last-run
+  history" step, if referenced by number anywhere else in the file) →
+  "Step 4"; any reference to "Step 2" (old "Execute each selected
+  flow") → "Step 3". Read the full file after the heading renumber to
+  catch any such cross-reference — do not assume there are none without
+  checking.
+
+- [ ] **Step 4: Verify**
+
+```bash
+cd /Users/juliadisarli/Documents/GitHub/qa-team
+grep -n "^## " .claude/skills/qa-regression/SKILL.md
+```
+
+Expected, in order: `## Step 0 — Pre-flight: verify Playwright MCP`,
+`## Step 1 — Reading Project Context`, `## Step 2 — Load the regression
+flows`, `## Step 3 — Execute each selected flow`, `## Step 4 — Update
+last-run history`, `## Step 5 — Final report`, `## Constraints`.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add .claude/skills/qa-regression/SKILL.md
+git commit -m "feat: qa-regression reads context/navigation-map.md for Site Structure and Known Non-Bug Quirks"
+```
+
+---
+
 ### Task 6: Write `GUIDE.md`
 
 **Files:**
 - Create: `GUIDE.md`
 
 **Interfaces:**
-- Consumes: the final state of every skill and file this plan and the prior `qa-team-template` plan produced — `qa-project-setup` (Task 3), `qa-blackbox` (Task 4), `qa-smoke-test` (Task 5), `qa-regression` (unmodified), `qa-text-check`, `report-bugs-to-clickup`, `report-improvements-to-clickup`, `.env.example` (Task 1), `context/navigation-map.md`'s final two-section template (Task 2).
+- Consumes: the final state of every skill and file this plan and the prior `qa-team-template` plan produced — `qa-project-setup` (Task 3), `qa-blackbox` (Task 4), `qa-smoke-test` (Task 5), `qa-regression` (Task 5b), `qa-text-check`, `report-bugs-to-clickup`, `report-improvements-to-clickup`, `.env.example` (Task 1), `context/navigation-map.md`'s final two-section template (Task 2).
 - Produces: the file `GUIDE.md` that Task 7 (`README.md` trim) links to.
 
 - [ ] **Step 1: Write `GUIDE.md`**
@@ -972,6 +1084,21 @@ Task 3's Constraints-section explanation of what moved to `.env` (if
 any match at all — ideally zero, confirm by reading what actually
 matched if the count is non-zero, per Task 3's own Step 5 expectation).
 
+- [ ] **Step 6b: Confirm `qa-regression` reads `navigation-map.md` and correctly does NOT read `.env`**
+
+```bash
+cd /tmp/qa-team-validate
+grep -n "navigation-map.md\|Known Non-Bug Quirks\|Site Structure" .claude/skills/qa-regression/SKILL.md
+grep -n "\.env\|BASE_URL\|TEST_USER" .claude/skills/qa-regression/SKILL.md
+```
+
+Expected: the first grep finds `qa-regression`'s new Step 1 referencing
+`context/navigation-map.md`, `## Site Structure`, and `## Known Non-Bug
+Quirks`; the second grep finds nothing (or only the explicit sentence
+stating it does *not* read `.env`, per Task 5b's Step 2 content) —
+confirms `qa-regression` gained the navigation-map read without also
+gaining an `.env` read it was never supposed to have.
+
 - [ ] **Step 7: Confirm `GUIDE.md` and `README.md` cross-reference correctly**
 
 ```bash
@@ -1009,7 +1136,7 @@ recommendation as the prior two plans in this repo left open.
 
 ## Self-Review Notes
 
-- **Spec coverage:** Task 1 covers spec Part 1 "Files". Task 2 covers "`context/navigation-map.md`'s template changes". Tasks 3-5 cover "Skill changes" (`qa-project-setup`, `qa-blackbox`, `qa-smoke-test` respectively) and the Global Constraints' explicit note that `qa-regression` is unaffected. Task 6 covers spec Part 2's full `GUIDE.md` section list. Task 7 covers "`README.md` is trimmed... with a prominent link to `GUIDE.md`". Task 8 covers the spec's explicit "Validation goal for this iteration" requirement — walking the chain for real, not just reading files in isolation.
+- **Spec coverage:** Task 1 covers spec Part 1 "Files". Task 2 covers "`context/navigation-map.md`'s template changes". Tasks 3-5 cover "Skill changes" (`qa-project-setup`, `qa-blackbox`, `qa-smoke-test` respectively). Task 5b covers the corrected `qa-regression` scope (see below). Task 6 covers spec Part 2's full `GUIDE.md` section list. Task 7 covers "`README.md` is trimmed... with a prominent link to `GUIDE.md`". Task 8 covers the spec's explicit "Validation goal for this iteration" requirement — walking the chain for real, not just reading files in isolation, including Task 5b's addition (Step 6b).
 - **Placeholder scan:** no TBD/TODO; every step has literal file content, literal find/replace blocks, or literal commands with expected output.
-- **Type/name consistency:** `BASE_URL`, `TEST_USER_EMAIL`, `TEST_USER_PASSWORD`, `API_KEY` are used identically across Task 1 (`.env.example`), Task 3 (`qa-project-setup`'s Step 2 prose), Task 4 (`qa-blackbox`), Task 5 (`qa-smoke-test`), Task 6 (`GUIDE.md`), and Task 8's live validation (Steps 2-5) — verified for drift in Task 8 Step 5 specifically.
-- **`qa-regression` explicitly out of scope:** confirmed by reading its current SKILL.md before writing this plan (it only reads `context/regression-flows.md`, never `navigation-map.md` or any credential source) — recorded as a Global Constraint so no task accidentally "completes the set" by touching a file that was never in scope.
+- **Type/name consistency:** `BASE_URL`, `TEST_USER_EMAIL`, `TEST_USER_PASSWORD`, `API_KEY` are used identically across Task 1 (`.env.example`), Task 3 (`qa-project-setup`'s Step 2 prose), Task 4 (`qa-blackbox`), Task 5 (`qa-smoke-test`), Task 6 (`GUIDE.md`), and Task 8's live validation (Steps 2-5) — verified for drift in Task 8 Step 5 specifically. `qa-regression` is deliberately absent from that list (Task 5b, Task 8 Step 6b) since it doesn't read `.env`.
+- **Task 5b added mid-plan, correcting an initial scoping decision:** this plan's first draft explicitly scoped `qa-regression` out entirely (both `navigation-map.md` and `.env`), reasoning that each flow's own steps/test data made a context-read step unnecessary. User feedback caught that this missed the `## Known Non-Bug Quirks` false-positive guard `qa-blackbox` already has, which applies equally to bugs found during a regression run — `qa-regression` finds and reports bugs too, so it needed the same guard. Task 5b was added as a new task rather than editing this plan's original narrative in place, and the Global Constraints bullet and every task's Interfaces section referencing `qa-regression` were updated to match (Task 6, Task 8). The `.env` exclusion was NOT part of what needed correcting — that stays as originally scoped, and Task 5b's own content explicitly says so, so a future reader doesn't wonder whether excluding `.env` from `qa-regression` was an oversight too.

@@ -80,15 +80,26 @@ one place for each: secrets in `.env`, non-secret structure in
   than necessary). Then continue asking about `## Site Structure` and
   `## Known Non-Bug Quirks` only, dropping the Base URL/Test Credentials
   questions entirely.
-- **`qa-blackbox`, `qa-smoke-test`, `qa-regression`** — their existing
-  "read project context" step additionally reads `.env` (via `Bash`,
-  e.g. `set -a && source .env && set +a` or an equivalent safe read) to
-  get `BASE_URL` and credentials, instead of expecting those two values
-  in `navigation-map.md`. If `.env` doesn't exist or `BASE_URL` is
-  empty, the skill tells the user to run `/qa-project-setup` (which now
-  covers the `.env`-creation reminder) or manually create `.env` from
+- **`qa-blackbox`, `qa-smoke-test`** — their existing "read project
+  context" step additionally reads `.env` (via `Bash`, e.g.
+  `set -a && source .env && set +a` or an equivalent safe read) to get
+  `BASE_URL` and credentials, instead of expecting those two values in
+  `navigation-map.md`. If `.env` doesn't exist or `BASE_URL` is empty,
+  the skill tells the user to run `/qa-project-setup` (which now covers
+  the `.env`-creation reminder) or manually create `.env` from
   `.env.example`, the same way an unfilled `navigation-map.md` is
   already handled today.
+- **`qa-regression`** — today it reads only `context/regression-flows.md`
+  and has no "read project context" step at all, since each flow entry
+  already carries its own steps and test data. This iteration adds one:
+  before executing any flow, read `context/navigation-map.md`'s
+  `## Site Structure` (general orientation) and `## Known Non-Bug
+  Quirks` sections, and cross-check anything found during a flow run
+  against Known Non-Bug Quirks before reporting it as a bug — the same
+  false-positive guard `qa-blackbox` already has. `qa-regression` does
+  **not** read `.env` — it never needed a base URL or credentials of its
+  own (each flow's own `**Steps:**`/`**Test data:**` already carries
+  whatever it needs), and that remains true after this change.
 - **Security rule, all of the above** — no skill ever prints `.env`'s
   contents into the conversation transcript or into any report file.
   `.env` values are read for internal use (navigating, logging in) only.
