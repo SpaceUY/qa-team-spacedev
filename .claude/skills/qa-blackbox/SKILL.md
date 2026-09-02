@@ -37,6 +37,46 @@ available, before Scenario S1.
 
 ---
 
+## Error Guessing Heuristics
+
+Alongside the standard scenario checklist (S1-S12, below), apply
+experience-based error guessing: bugs cluster around a known set of
+situations more than random chance would predict. Check each of these
+against every input, form, and interactive element you encounter,
+in addition to (never instead of) running the standard scenarios:
+
+- **Boundary values** — the smallest/largest accepted value, one below
+  the minimum, one above the maximum (e.g. a quantity field: 0, -1,
+  the max allowed, max+1).
+- **Empty and null inputs** — submitting a required field empty, or a
+  field that accepts an empty string where a null/undefined might slip
+  through instead.
+- **Special characters and encoding** — unicode, emoji, SQL-metacharacters
+  (`'`, `--`, `;`), HTML/script tags in free-text fields (to check for
+  unescaped rendering, not to attempt exploitation — this is black-box
+  functional QA, not a penetration test).
+- **Double submission** — clicking a submit/pay/confirm button twice in
+  quick succession, or submitting a form and immediately navigating back
+  and re-submitting.
+- **Unexpected navigation** — using the browser back button mid-flow
+  (e.g. mid-checkout), refreshing on a confirmation page, or opening a
+  flow in two tabs at once.
+- **Long input** — a string far longer than the field visually
+  accommodates, to check for truncation, overflow, or layout breakage
+  rather than a graceful limit.
+- **Concurrent/rapid interaction** — rapidly toggling a control, or
+  triggering an action before a prior async operation (e.g. a save)
+  has finished.
+- **Wrong-type input where the UI allows it** — pasting text into a
+  numeric-looking field, or a date picker's text fallback with an
+  invalid date.
+
+Report anything these heuristics surface using the same Bug Register
+format and severity classification as everything else in this skill —
+this is a checklist for *where to look*, not a separate report section.
+
+---
+
 ## Quality Dimensions & Scoring
 
 Each session scores 0–100 using six weighted dimensions:
