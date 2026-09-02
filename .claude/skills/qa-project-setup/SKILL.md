@@ -93,8 +93,12 @@ to capture:
 Write each flow as a new `## Flow: {name}` section (matching the
 template's exact heading pattern from `context/regression-flows.md`'s
 own template comment), with `**Steps:**`, `**Test data:**`, and
-`**Last successful run:** never run` — the run-date field is only ever
-updated by `qa-regression`, never by this skill.
+`**Last successful run:** never run` — this skill always writes
+`never run`, since documenting a flow here is not the same as
+executing it. The run-date field is only ever stamped with an actual
+date by `qa-regression` (after running the flow end-to-end) or by
+`qa-smoke-test` (when its end-of-run regression sync adds or updates
+this flow and the smoke test passed) — never by `qa-project-setup`.
 
 Keep asking "Any more core flows to add?" until the user says no.
 
