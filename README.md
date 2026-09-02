@@ -1,5 +1,10 @@
 # QA E2E Toolkit
 
+> This repo is a GitHub **Template repository**. To start a new
+> project, use GitHub's "Use this template" button (or
+> `gh repo create --template <owner>/qa-team <new-repo-name>`) — don't
+> fork or clone-and-reinit by hand.
+
 SpaceDev's shared toolkit for end-to-end testing. Two independent modules —
 pick the one that fits what you're doing:
 
@@ -29,6 +34,29 @@ skills banner: `qa-blackbox`, `qa-text-check`, `frontend-design`,
 `.claude/skills/`; the latter two are Claude Code plugin skills (sourced
 from `anthropics/skills` and `obra/superpowers` respectively) — see
 `CLAUDE.md` for the full protocol.
+
+## Running a Text QA Check
+
+Unlike `qa-blackbox`, this does **not** run automatically — invoke it
+explicitly:
+
+> `/qa-text-check <url-or-flow> --lang=es|en`
+
+Optionally pass `--pages=<screen list>` to name the screens to visit;
+otherwise Claude asks which screens or flow to cover. Claude will:
+1. Verify Playwright MCP is connected
+2. Visit each screen, extract visible UI text, take one evidence
+   screenshot per screen, review for issues, and write the report —
+   running that entire pipeline as a single background task instead
+   of inline when the scope covers more than 5 screens
+3. Report only high-confidence typo/grammar/mixed-language/
+   punctuation issues
+4. Save `text-qa-report.md` (in `report-bugs-to-clickup`'s exact
+   4-column Bug Register format) to the same evidence folder
+   structure used by `qa-blackbox`
+
+See [`.claude/skills/qa-text-check/SKILL.md`](./.claude/skills/qa-text-check/SKILL.md)
+for the full protocol.
 
 ## Project Context (OpenKnowledge)
 
@@ -98,6 +126,67 @@ See
 `docs/superpowers/specs/2026-09-01-report-improvements-to-clickup-design.md`
 for the full design, including the fixed-List-plus-sprint-association
 model both skills share.
+
+## Setting Up a New Project
+
+The first time you use a project repo created from this template, run:
+
+> `/qa-project-setup`
+
+Claude will run `ok init` if needed, then walk you through filling in
+`context/navigation-map.md` (base URL, site structure, test credentials
+reference, known non-bug quirks) and `context/regression-flows.md`
+(this product's core end-to-end flows). Re-run it any time the app's
+structure or core flows change — it edits existing content, it doesn't
+overwrite it.
+
+## Running Smoke Tests
+
+For a specific ClickUp ticket, invoke:
+
+> `/qa-smoke-test <ticket link or ID>`
+
+Claude fetches the ticket fresh from ClickUp, runs a focused set of
+checks scoped to that ticket's feature (not the full `qa-blackbox`
+protocol), and — at the end of every run — asks whether this flow should
+be added to or update `context/regression-flows.md`, so the regression
+set stays current as features ship.
+
+## Running Regression Tests
+
+To execute every documented core flow end-to-end:
+
+> `/qa-regression`
+
+Claude reads `context/regression-flows.md`, runs each flow's steps with
+its test data, records any bugs found, and updates each passing flow's
+last-successful-run date.
+
+## Project Structure
+
+```
+qa-team/
+├── .claude/
+│   ├── skills/
+│   │   ├── qa-blackbox/SKILL.md
+│   │   ├── qa-text-check/SKILL.md
+│   │   ├── qa-project-setup/SKILL.md
+│   │   ├── qa-smoke-test/SKILL.md
+│   │   ├── qa-regression/SKILL.md
+│   │   ├── report-bugs-to-clickup/
+│   │   └── report-improvements-to-clickup/
+│   ├── settings.local.json.example   # copy to settings.local.json
+│   └── settings.local.json           # gitignored, created locally
+├── context/                           # this project's OK knowledge base
+│   ├── README.md
+│   ├── navigation-map.md
+│   └── regression-flows.md
+├── e2e-tests/                         # traditional Playwright Test suite (unchanged)
+├── evidence/                          # gitignored — screenshots and reports
+├── docs/superpowers/                  # specs and plans (this document's own home)
+├── CLAUDE.md
+└── README.md
+```
 
 ## Troubleshooting
 
