@@ -213,16 +213,26 @@ Write to `evidence/{hostname}/{subpath}/{YYYY-MM-DD}/qa-report.md`:
 
 ## Recommended Actions
 
+Write each item under every subsection below as a `-` bullet, never a
+numbered list, with no blank markdown divider (`---`) between the
+bullets and the next heading. `report-improvements-to-clickup`'s
+parser reads the "Nice to Have" subsection's items by scanning lines
+that start with `-` until the next heading of any level: a numbered
+list never matches, so it's silently skipped (zero items found), and a
+stray `---` divider line matches too (it also starts with `-`) and gets
+misread as a bogus bullet. If nothing qualifies for a subsection, still
+write it with a single bullet stating that, e.g. `- None for this run.`
+— never leave a subsection with zero bullet items, since the parser
+requires at least one.
+
 ### Must Fix (High severity)
-1. ...
+- ...
 
 ### Should Fix (Medium severity)
-1. ...
+- ...
 
 ### Nice to Have (Low severity)
-1. ...
-
----
+- ...
 
 ## Evidence Files
 
