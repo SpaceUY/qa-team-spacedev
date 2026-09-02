@@ -96,6 +96,18 @@ For each screen in scope:
    content, IDs) — the skill reviews UI copy, not arbitrary content
    rendered from the backend.
 
+**Execution mode for large scopes:** a full browser (Playwright MCP)
+is required — a plain HTTP fetch of the HTML cannot see text rendered
+client-side by a JS framework, which is most of the UI copy in a
+modern SPA. To keep this fast without blocking the user's session,
+when the resolved scope (`--pages` or the user's answer) covers more
+than **5 screens**, the skill runs the screen-by-screen loop in this
+section as a background task and reports back when the full report
+is ready, instead of walking screens one by one in the foreground.
+For 5 or fewer screens, it runs inline as normal. This does not
+change any other part of the flow — extraction, review, and report
+format are identical either way.
+
 ### 4. Review text (Claude judgment, no external spellchecker)
 
 For each extracted UI string, Claude evaluates it against the
