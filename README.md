@@ -5,6 +5,11 @@
 > `gh repo create --template <owner>/qa-team <new-repo-name>`) — don't
 > fork or clone-and-reinit by hand.
 
+> **New to this repo?** Read [`GUIDE.md`](./GUIDE.md) end to end first —
+> it walks through cloning, mapping your project's context, configuring
+> `.env`, and which testing skill to use when. This README is a
+> technical quickstart/reference, not the full walkthrough.
+
 SpaceDev's shared toolkit for end-to-end testing. Two independent pieces —
 pick the one that fits what you're doing:
 
@@ -24,6 +29,7 @@ files executed by a CLI).
 ```bash
 npx playwright install chromium   # one-time
 cp .claude/settings.local.json.example .claude/settings.local.json
+cp .env.example .env   # then fill in BASE_URL and test credentials
 claude
 ```
 
@@ -100,13 +106,26 @@ last-successful-run date.
 
 This repo's `context/` directory is an [OpenKnowledge](https://github.com/inkeep/open-knowledge)
 project once initialized. The first time you use a project repo created
-from this template, run `/qa-project-setup` — it runs `ok init` for you
-and then walks you through filling in `context/navigation-map.md` and
-`context/regression-flows.md` with your project's specifics.
+from this template, run `/qa-project-setup` — it runs `ok init` for you,
+reminds you to configure `.env` (see below), and walks you through
+filling in `context/navigation-map.md` and `context/regression-flows.md`
+with your project's specifics.
 
 You do not need to run `ok init` yourself, and this template repo does
 not ship with `.ok/` already created — `qa-project-setup` creates it the
-first time, scoped to your new project repo.
+first time, scoped to your new project repo. See
+[`GUIDE.md`](./GUIDE.md) for the full walkthrough.
+
+## Credentials (`.env`)
+
+```bash
+cp .env.example .env
+```
+
+Fill in `BASE_URL`, `TEST_USER_EMAIL`, `TEST_USER_PASSWORD` (and
+`API_KEY` if your project needs one). `.env` is gitignored — never
+commit it or paste its contents into chat. See
+[`GUIDE.md`](./GUIDE.md#3-configure-env) for details.
 
 ## Quickstart — e2e-tests
 
