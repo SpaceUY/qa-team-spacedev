@@ -84,12 +84,74 @@ Only edit the specific flow entries that were actually run in this
 session — never touch a flow's entry that wasn't part of this run's
 selection.
 
-## Step 5 — Final report
+## Step 5 — Write reports
+
+A regression run covers multiple flows in one session, so follow the
+same "one session, multiple things tested, one summary" pattern
+`qa-blackbox`'s Full Site Audit protocol uses for multiple paths
+(`CLAUDE.md` § "🌐 Full Site Audit Protocol", Phase 2/Phase 3): write
+one `qa-report.md` per flow, plus one session-level summary.
+
+For each flow that was run, write
+`evidence/{hostname}/{subpath}/{YYYY-MM-DD}/qa-report.md` — using the
+flow's name, slugified, as `{subpath}` (the same folder Step 3's
+screenshots were saved into) — in the same 4-column Bug Register
+format as `qa-blackbox` (`ID | Severity | Description | Evidence`), so
+`report-bugs-to-clickup` can parse each one without any changes:
+
+```markdown
+# QA Report — {Flow name}
+
+**Date:** YYYY-MM-DD
+**URL:** {flow's URL, from its first Steps entry that names one}
+
+---
+
+## Executive Summary
+
+**Status:** PASS | FAIL
+{1–3 sentence verdict for this flow.}
+
+---
+
+## Bug Register
+
+| ID | Severity | Description | Evidence |
+|----|----------|-------------|----------|
+| BUG-001 | 🔴 High | ... | 01-*.png |
+
+---
+
+## Evidence Files
+
+| File | Description |
+|------|-------------|
+| 01-*.png | ... |
+```
+
+The title line must read exactly `# QA Report — {Tested flow}` (em
+dash). If a flow found no bugs, still write its report: an empty Bug
+Register table (header row only) plus an explicit sentence such as "No
+issues found for this flow." — never skip writing a flow's report
+because there was nothing to find.
+
+After every run flow has its own report, write a session-level summary
+at the hostname root, following the same `AUDIT-SUMMARY-{YYYY-MM-DD}.md`
+format `qa-blackbox`'s Full Site Audit uses:
+`evidence/{hostname}/AUDIT-SUMMARY-{YYYY-MM-DD}.md`, listing each run
+flow with its score/status and critical bug count, any cross-cutting
+issues observed across flows, and a priority fix list ranked by
+severity across all flows. If the summary file for today already
+exists (e.g. a Full Site Audit already ran today), add this run's
+flows to it rather than overwriting.
+
+## Step 6 — Final report
 
 Summarize per flow: PASS/FAIL, any bugs found (with evidence), and any
 "test data may need updating" flags. Call out any flow whose last
 successful run (before this session) was more than 30 days ago, so a
-long-neglected flow is visible even if this run didn't cover it.
+long-neglected flow is visible even if this run didn't cover it. Point
+the user to the report file(s) and summary written in Step 5.
 
 ## Constraints
 
@@ -100,3 +162,8 @@ long-neglected flow is visible even if this run didn't cover it.
 - Never modify a flow's `**Steps:**` or `**Test data:**` content — that's
   `qa-project-setup`'s and `qa-smoke-test`'s job, not this skill's. This
   skill only reads steps/test-data and writes the last-run date.
+- Never fabricate a bug not actually observed during a flow's
+  execution — each flow's report (Step 5) reflects only what was
+  actually checked.
+- Never skip writing a flow's report (Step 5), even if the flow passed
+  with no bugs found.

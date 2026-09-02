@@ -64,7 +64,61 @@ found (with evidence), and an overall smoke-test verdict (PASS /
 CONDITIONAL PASS / FAIL) — same three-way verdict vocabulary
 `qa-blackbox` uses, for consistency.
 
-## Step 4 — End-of-run regression sync (mandatory, every run)
+## Step 4 — Write the report
+
+Write `evidence/{hostname}/{subpath}/{YYYY-MM-DD}/qa-report.md` — the
+same dated evidence folder Step 2's screenshots were saved into, using
+the same hostname/subpath naming rules as `CLAUDE.md` § "📁 Evidence
+Structure". If the day's folder already exists, add to it rather than
+overwriting.
+
+The report uses the same 4-column Bug Register format as
+`qa-blackbox`'s `qa-report.md` (`ID | Severity | Description |
+Evidence`), so `report-bugs-to-clickup` can parse it without any
+changes:
+
+```markdown
+# QA Report — {Ticket title or feature name}
+
+**Date:** YYYY-MM-DD
+**URL:** {full URL of the screen(s) tested}
+
+---
+
+## Executive Summary
+
+**Status:** PASS | CONDITIONAL PASS | FAIL
+{1–3 sentence verdict, matching what you told the user in Step 3.}
+
+---
+
+## Bug Register
+
+| ID | Severity | Description | Evidence |
+|----|----------|-------------|----------|
+| BUG-001 | 🔴 High | ... | 01-*.png |
+
+---
+
+## Evidence Files
+
+| File | Description |
+|------|-------------|
+| 01-*.png | ... |
+```
+
+The title line must read exactly `# QA Report — {Tested flow}` (em
+dash), matching `report-bugs-to-clickup`'s required header format —
+use the ticket's title (or a short feature name derived from it) as
+`{Tested flow}`.
+
+If **no bugs** were found, still write the report: an empty Bug
+Register table (header row only) plus an explicit sentence such as "No
+issues found during this smoke test." — same precedent `qa-text-check`
+follows. Never skip writing the report because there was nothing to
+find.
+
+## Step 5 — End-of-run regression sync (mandatory, every run)
 
 Regardless of the Step 3 verdict, ask the user via `AskUserQuestion`:
 
@@ -105,8 +159,10 @@ ticket seems minor — let the user decide, don't decide for them.
 
 - Never persist ClickUp ticket content into `context/` — always fetch
   fresh (Step 1).
-- Never skip the Step 4 regression-sync question.
+- Never skip the Step 5 regression-sync question.
 - Never fabricate acceptance criteria not actually present on the
-  ticket.
+  ticket, and never fabricate a bug not actually observed during the
+  smoke test — the report (Step 4) reflects only what was actually
+  checked.
 - Never write a plaintext credential or secret into `context/` — same
   rule as `qa-project-setup`.

@@ -95,10 +95,14 @@ separate manual step.
 
 `qa-blackbox`, `qa-text-check`, `qa-smoke-test`, and `qa-regression` all
 save evidence (a report plus screenshots) to
-`evidence/{hostname}/{subpath}/{YYYY-MM-DD}/` — `qa-blackbox` and
-`qa-smoke-test` write `qa-report.md`, `qa-text-check` writes
-`text-qa-report.md`, both in the same 4-column Bug Register format
-(`ID | Severity | Description | Evidence`).
+`evidence/{hostname}/{subpath}/{YYYY-MM-DD}/` — `qa-blackbox`,
+`qa-smoke-test`, and `qa-regression` (one per flow run) write
+`qa-report.md`, `qa-text-check` writes `text-qa-report.md`, all in the
+same 4-column Bug Register format (`ID | Severity | Description |
+Evidence`). `qa-regression` also writes a session-level
+`evidence/{hostname}/AUDIT-SUMMARY-{YYYY-MM-DD}.md` summarizing all
+flows run in that session, the same pattern `qa-blackbox`'s Full Site
+Audit mode uses for multiple paths.
 
 To turn a report's findings into ClickUp tickets, run one or both of
 these (manual, on-demand — they never run automatically):
