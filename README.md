@@ -5,18 +5,19 @@
 > `gh repo create --template <owner>/qa-team <new-repo-name>`) — don't
 > fork or clone-and-reinit by hand.
 
-SpaceDev's shared toolkit for end-to-end testing. Two independent modules —
+SpaceDev's shared toolkit for end-to-end testing. Two independent pieces —
 pick the one that fits what you're doing:
 
-| Module | What it is | When to use it |
+| Piece | What it is | When to use it |
 |--------|------------|-----------------|
-| `qa-agent` | Claude Code + Playwright MCP black-box QA agent — run from the repo root | Interactive/exploratory QA sessions — auditing a flow or a whole site, ad hoc bug hunting, generating an evidence report to share. |
+| QA Agent skills (`.claude/skills/`) | Claude Code + Playwright MCP black-box QA — `qa-blackbox`, `qa-text-check`, `qa-project-setup`, `qa-smoke-test`, `qa-regression`, run from the repo root | Interactive/exploratory QA sessions, focused smoke tests, and end-to-end regression — auditing a flow or a whole site, ad hoc bug hunting, generating an evidence report to share. |
 | [`e2e-tests/`](./e2e-tests) | Traditional [Playwright Test](https://playwright.dev/docs/test-intro) suite (`.spec.ts`), runs via `npx playwright test`. | Automated regression testing you want versioned in code and run in CI on every PR. |
 
-Both modules use [Playwright](https://playwright.dev/) under the hood, but
-in different modes: the QA agent uses the Playwright **MCP server** (browser
-control exposed as tools Claude calls directly), while `e2e-tests/` uses the
-Playwright **Test runner** (compiled `.spec.ts` files executed by a CLI).
+Both pieces use [Playwright](https://playwright.dev/) under the hood, but
+in different modes: the QA Agent skills use the Playwright **MCP server**
+(browser control exposed as tools Claude calls directly), while
+`e2e-tests/` uses the Playwright **Test runner** (compiled `.spec.ts`
+files executed by a CLI).
 
 ## Quickstart — QA Agent
 
@@ -97,8 +98,8 @@ with the active sprint, tagged by environment and assigned to the
 logged-in ClickUp user.
 
 This is a manual, on-demand skill — it does not run automatically at the
-end of a `qa-agent` session. Run it explicitly when you're ready to file
-tickets:
+end of a `qa-blackbox` session. Run it explicitly when you're ready to
+file tickets:
 
 ```bash
 /report-bugs-to-clickup path/to/qa-report.md
