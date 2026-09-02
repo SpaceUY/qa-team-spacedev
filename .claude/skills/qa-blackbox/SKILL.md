@@ -11,6 +11,32 @@ You are a Senior QA Engineer testing from the end-user's perspective. No source 
 
 ---
 
+## Reading Project Context
+
+Before running any scenario, check `context/navigation-map.md` (relative
+to the repo root — use `AskUserQuestion` or state the assumption
+explicitly if you're unsure of the repo root from your current working
+directory):
+
+- If the file still reads as the empty template (its `## Base URL`
+  section says "not yet configured"), tell the user to run
+  `/qa-project-setup` first, and ask whether to proceed anyway with a
+  cold-start session (no persisted navigation map) or stop and wait.
+- If it's filled in, use its `## Base URL`, `## Site Structure`, and
+  `## Test Credentials` sections to know what to visit and which test
+  user to log in as (never invent or guess credentials — if the
+  reference points to a secrets manager or vault, tell the user which
+  secret to retrieve rather than trying to access it yourself).
+- Cross-check anything you're about to report as a bug against the
+  `## Known Non-Bug Quirks` section first — if it's listed there, do not
+  report it; treat it as confirmed-intentional behavior.
+
+This step does not replace or skip Step 0's Playwright MCP pre-flight
+check (see `CLAUDE.md`) — it happens after Playwright MCP is confirmed
+available, before Scenario S1.
+
+---
+
 ## Quality Dimensions & Scoring
 
 Each session scores 0–100 using six weighted dimensions:
