@@ -2,7 +2,7 @@
 name: qa-text-check
 description: Browses live app screens with Playwright MCP and reports high-confidence typo, grammar, mixed-language, and punctuation bugs in Spanish or English. Invoke manually with a URL/flow and --lang=es|en.
 user-invocable: true
-allowed-tools: Read, AskUserQuestion
+allowed-tools: Write, Read, AskUserQuestion
 ---
 
 # qa-text-check — Text-Quality QA (typos, grammar, mixed language)
@@ -49,11 +49,15 @@ Do not attempt navigation or a workaround without Playwright MCP.
 ## Step 2 — Visit each screen and extract visible text
 
 **Execution mode:** count the resolved scope. If it has **more than 5
-screens**, run this step's loop as a background task (do not block
-the conversation walking screens one by one) and report back to the
-user once the full report (Step 5) is written. If it has **5 or
-fewer screens**, run the loop inline as normal. Either way, the
-extraction, review, and report steps below are identical.
+screens**, run the entire pipeline — Steps 2 through 5 (visit/extract,
+review, classify, and write the report) — as a single background task,
+not just this step's loop, so the conversation is never blocked
+walking screens one by one. Report back to the user only once Step 5
+has finished writing `text-qa-report.md`, and give the user its path.
+If the scope has **5 or fewer screens**, run Steps 2 through 5 inline
+as normal. Either way, the extraction, review, classification, and
+report steps are identical — only whether they run in the foreground
+or as one backgrounded unit changes.
 
 For each screen in scope, in order:
 
@@ -63,7 +67,15 @@ For each screen in scope, in order:
    text, links, error/validation messages, placeholders, tooltips,
    empty-state copy.
 3. Take exactly **one** evidence screenshot for this screen via
-   `mcp__playwright__browser_take_screenshot` (not one per string).
+   `mcp__playwright__browser_take_screenshot`, saved into the same
+   dated evidence folder Step 5 writes the report into —
+   `evidence/{hostname}/{subpath}/{YYYY-MM-DD}/` — using the filename
+   convention `NN-{screen-name}.png` (e.g. `01-register.png`,
+   `02-dashboard.png`), numbered in visit order with continuity if the
+   day's folder already has screenshots. This applies whether the run
+   is inline or backgrounded, so the report's `Evidence` column always
+   names a file that actually exists in that folder. Take exactly one
+   screenshot per screen (not per string).
 4. Discard strings that are pure data — numbers, dates,
    user-generated content, IDs. You review UI copy, not arbitrary
    backend-rendered content.
@@ -99,14 +111,29 @@ proper noun, or technical term you're not certain is wrong.
 
 ## Step 5 — Write the report
 
+If this pipeline was started as a background task (Step 2, scope > 5
+screens), this step still runs as part of that same background task —
+do not treat it as a separate foreground step. Only once this step
+finishes do you report back to the user.
+
 Write to `evidence/{hostname}/{subpath}/{YYYY-MM-DD}/text-qa-report.md`,
 using the same hostname/subpath naming rules as `qa-agent/CLAUDE.md`
 § "📁 Evidence Structure" (e.g. `/` → `root`, `localhost:5173` →
-`localhost-5173`). If the day's folder already exists, add files
-rather than overwriting; number screenshots with continuity.
+`localhost-5173`). This is the same dated evidence folder the Step 2.3
+screenshots were saved into. If the day's folder already exists, add
+files rather than overwriting; number screenshots with continuity.
+
+The report uses the same 4-column Bug Register format as
+`qa-blackbox`'s `qa-report.md` (`ID | Severity | Description |
+Evidence`), so `report-bugs-to-clickup` can parse it without any
+changes. When writing the `Description` cell for each bug, combine the
+issue type, original text, and suggested text as: `{Issue type}:
+"{Original text}" → "{Suggested text}"` — or just `{Issue type}:
+"{Original text}"` when there is no single correct replacement (e.g. a
+leaked i18n key).
 
 ```markdown
-# Text QA Report — {Tested flow}
+# QA Report — {Tested flow}
 
 **Date:** YYYY-MM-DD
 **URL:** {full URL}
@@ -116,9 +143,9 @@ rather than overwriting; number screenshots with continuity.
 
 ## Bug Register
 
-| ID | Severity | Screen | Original text | Suggested text | Issue type | Evidence |
-|----|----------|--------|----------------|-----------------|------------|----------|
-| TXT-001 | 🟡 Medium | Register | "Ingresa tu contraseña" | "Ingresá tu contraseña" | Grammar | 01-register.png |
+| ID | Severity | Description | Evidence |
+|----|----------|--------------|----------|
+| TXT-001 | 🟡 Medium | Grammar: "Ingresa tu contraseña" → "Ingresá tu contraseña" | 01-register.png |
 
 ---
 
@@ -129,11 +156,11 @@ rather than overwriting; number screenshots with continuity.
 | 01-register.png | Register screen |
 ```
 
-The `Description` column expected by `report-bugs-to-clickup` is
-derived from this table's `Issue type`, `Original text`, and
-`Suggested text` columns as: `{Issue type}: "{Original text}" →
-"{Suggested text}"` — or just `{Issue type}: "{Original text}"` when
-there is no single correct replacement (e.g. a leaked i18n key).
+Note the title line must read exactly `# QA Report — {Tested flow}`
+(em dash, matching `report-bugs-to-clickup`'s required header
+format) — not `# Text QA Report — …`. The `**Language checked:**` line
+stays in the report body for a human reader; it is not read by the
+parser.
 
 If a screen fails to load or navigate, skip it and add a short
 "Skipped screens" note near the bottom of the report — continue with
@@ -147,9 +174,10 @@ nothing to find.
 
 ## Constraints
 
-- Never fabricate a "Suggested text" you're not confident about —
-  if the fix isn't obvious, describe the issue in "Issue type" only
-  and leave "Suggested text" as `—`.
+- Never fabricate a suggested replacement you're not confident about
+  — if the fix isn't obvious, the `Description` cell should state the
+  issue type and quote the original text only, without a "→
+  suggestion" arrow.
 - Never read i18n/source files — this is black-box QA; review only
   what's rendered live in the browser.
 - Never use `browser_evaluate` to simulate what `browser_snapshot`

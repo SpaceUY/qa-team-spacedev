@@ -10,8 +10,9 @@ Detect typos and other text-quality bugs (spelling, grammar/agreement,
 mixed-language text, punctuation/capitalization) on live app screens,
 in Spanish or English, by browsing the app the same way `qa-blackbox`
 does and having Claude review each visible string. Produces a
-`text-qa-report.md` that can feed into `report-bugs-to-clickup` the
-same way a `qa-blackbox` report does.
+`text-qa-report.md` whose Bug Register uses the exact same 4-column
+format and title convention as a `qa-blackbox` `qa-report.md`, so
+`report-bugs-to-clickup` can parse it with zero changes.
 
 ## Trigger
 
@@ -90,8 +91,14 @@ For each screen in scope:
    node: headings, labels, button text, links, error/validation
    messages, placeholders, tooltips, empty-state copy.
 3. Take one evidence screenshot per **screen** (not per string) via
-   `browser_take_screenshot` — matches `qa-blackbox`'s evidence
-   convention, keeps volume sane.
+   `browser_take_screenshot`, saved into the same dated evidence
+   folder (`evidence/{hostname}/{subpath}/{YYYY-MM-DD}/`) that the
+   report (§6) is written into, using the same `NN-{screen-name}.png`
+   numbering convention already established for `qa-blackbox`
+   evidence (see `qa-agent/CLAUDE.md` § "📁 Evidence Structure", e.g.
+   `01-initial-load.png`) — so the report's `Evidence` column always
+   names a file that exists in that folder. This holds whether the
+   run is inline or backgrounded.
 4. Discard strings that are pure data (numbers, dates, user-generated
    content, IDs) — the skill reviews UI copy, not arbitrary content
    rendered from the backend.
@@ -101,12 +108,14 @@ is required — a plain HTTP fetch of the HTML cannot see text rendered
 client-side by a JS framework, which is most of the UI copy in a
 modern SPA. To keep this fast without blocking the user's session,
 when the resolved scope (`--pages` or the user's answer) covers more
-than **5 screens**, the skill runs the screen-by-screen loop in this
-section as a background task and reports back when the full report
-is ready, instead of walking screens one by one in the foreground.
-For 5 or fewer screens, it runs inline as normal. This does not
-change any other part of the flow — extraction, review, and report
-format are identical either way.
+than **5 screens**, the skill runs the *entire pipeline* — extraction
+(this section), review, severity classification, and report-writing
+(§6) — as a single background task, and reports back to the user only
+once the finished `text-qa-report.md` exists at its final path. For 5
+or fewer screens, that same pipeline runs inline as normal. This does
+not change any other part of the flow — extraction, review, and
+report format are identical either way; only whether the whole
+pipeline runs in the foreground or as one backgrounded unit changes.
 
 ### 4. Review text (Claude judgment, no external spellchecker)
 
@@ -143,7 +152,7 @@ technical term) are skipped, not reported.
 Write to `evidence/{hostname}/{subpath}/{YYYY-MM-DD}/text-qa-report.md`:
 
 ```markdown
-# Text QA Report — {Tested flow}
+# QA Report — {Tested flow}
 
 **Date:** YYYY-MM-DD
 **URL:** {full URL}
@@ -153,9 +162,9 @@ Write to `evidence/{hostname}/{subpath}/{YYYY-MM-DD}/text-qa-report.md`:
 
 ## Bug Register
 
-| ID | Severity | Screen | Original text | Suggested text | Issue type | Evidence |
-|----|----------|--------|----------------|-----------------|------------|----------|
-| TXT-001 | 🟡 Medium | Register | "Ingresa tu contraseña" | "Ingresá tu contraseña" | Grammar | 01-register.png |
+| ID | Severity | Description | Evidence |
+|----|----------|--------------|----------|
+| TXT-001 | 🟡 Medium | Grammar: "Ingresa tu contraseña" → "Ingresá tu contraseña" | 01-register.png |
 
 ---
 
@@ -166,14 +175,20 @@ Write to `evidence/{hostname}/{subpath}/{YYYY-MM-DD}/text-qa-report.md`:
 | 01-register.png | Register screen |
 ```
 
-The Bug Register table's columns are a superset of `qa-blackbox`'s
-(`ID | Severity | Description | Evidence`) — "Original text",
-"Suggested text", and "Issue type" fold into the `Description` column
-when consumed downstream, so `report-bugs-to-clickup` can parse this
-report's Bug Register without any changes: `Description` becomes
-`{Issue type}: "{Original text}" → "{Suggested text}"` (or just
-`{Issue type}: "{Original text}"` when there's no single correct
-replacement, e.g. a leaked i18n key).
+The Bug Register table uses `qa-blackbox`'s exact 4-column format
+(`ID | Severity | Description | Evidence`), and the title line uses
+`qa-blackbox`'s exact title format (`# QA Report — {Tested flow}`,
+matching `report-bugs-to-clickup`'s required header regex) — so
+`report-bugs-to-clickup` can parse this report's Bug Register without
+any changes. The folding of issue type, original text, and suggested
+text into the `Description` cell happens at report-writing time, as
+part of this skill's own report step, not as a downstream
+transformation: `Description` is written as `{Issue type}: "{Original
+text}" → "{Suggested text}"` (or just `{Issue type}: "{Original
+text}"` when there's no single correct replacement, e.g. a leaked
+i18n key). The `**Language checked:**` line stays in the report body
+for a human reader; `report-bugs-to-clickup`'s parser does not read
+it.
 
 If no issues are found on any visited screen, still write the report
 with an empty Bug Register and say so explicitly — do not skip the

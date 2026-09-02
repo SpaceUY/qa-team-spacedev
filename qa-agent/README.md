@@ -105,13 +105,15 @@ explicitly:
 Optionally pass `--pages=<screen list>` to name the screens to visit;
 otherwise Claude asks which screens or flow to cover. Claude will:
 1. Verify Playwright MCP is connected
-2. Visit each screen, extract visible UI text, and take one
-   evidence screenshot per screen — running as a background task
-   instead of inline when the scope covers more than 5 screens
+2. Visit each screen, extract visible UI text, take one evidence
+   screenshot per screen, review for issues, and write the report —
+   running that entire pipeline as a single background task instead
+   of inline when the scope covers more than 5 screens
 3. Report only high-confidence typo/grammar/mixed-language/
    punctuation issues
-4. Save `text-qa-report.md` to the same evidence folder structure
-   used by `qa-blackbox`
+4. Save `text-qa-report.md` (in `report-bugs-to-clickup`'s exact
+   4-column Bug Register format) to the same evidence folder
+   structure used by `qa-blackbox`
 
 See [`.agents/skills/qa-text-check/SKILL.md`](./.agents/skills/qa-text-check/SKILL.md)
 for the full protocol.
