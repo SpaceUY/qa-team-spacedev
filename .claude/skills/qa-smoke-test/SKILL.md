@@ -42,11 +42,12 @@ From the ticket's title/description/acceptance criteria, identify:
   ticket doesn't make this obvious — don't guess a URL).
 - What the acceptance criteria say should work.
 
-Optionally check `context/navigation-map.md` for the base URL and site
-structure, the same way `qa-blackbox` does — this skill benefits from
-that context too, but does not require it to be filled in (a smoke test
-can proceed with a URL the user provides directly if `navigation-map.md`
-is still an empty template).
+Optionally read `.env` via `Bash` (same method as `qa-blackbox`: source
+it, never `Read` it or print its contents) for `BASE_URL`, and check
+`context/navigation-map.md`'s `## Site Structure` section — this skill
+benefits from both but does not require either (a smoke test can
+proceed with a URL the user provides directly if `.env` isn't configured
+yet).
 
 Run a focused set of checks against just this feature: does it match
 each acceptance criterion, does the happy path work, and a light pass on
