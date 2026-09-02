@@ -38,29 +38,40 @@ If the `ok`/`npx` command fails (e.g. no internet access, Node.js not
 installed), tell the user exactly what failed and stop — do not attempt
 to hand-write `.ok/`'s internals yourself.
 
-## Step 2 — Fill in or update `context/navigation-map.md`
+## Step 2 — Guide `.env` creation, if not already done
 
-Read `context/navigation-map.md` first. For each of its four sections
-(`## Base URL`, `## Site Structure`, `## Test Credentials`,
-`## Known Non-Bug Quirks`), check whether it still holds the empty
-template placeholder text (e.g. "not yet configured") or already has
-real content.
+Check whether `.env` exists at the repo root:
+
+```bash
+test -f .env && echo "ENV_EXISTS" || echo "ENV_MISSING"
+```
+
+- If `ENV_MISSING`: tell the user to copy `.env.example` to `.env` and
+  fill in `BASE_URL`, `TEST_USER_EMAIL`, `TEST_USER_PASSWORD` (and
+  `API_KEY` if their project needs one) with real values for this
+  project. **Never ask the user to paste these values into the chat,
+  and never write them into any file yourself** — `.env` holds real
+  secrets, and this skill's job here is only to point the user at it,
+  not to handle the values. Wait for the user to confirm they've done
+  this before moving on to Step 3.
+- If `ENV_EXISTS`: skip straight to Step 3 — this is a re-run, or the
+  user already configured it. Do not read or print `.env`'s contents at
+  any point — its mere existence is all this skill needs to know.
+
+## Step 3 — Fill in or update `context/navigation-map.md`
+
+Read `context/navigation-map.md` first. For each of its two sections
+(`## Site Structure`, `## Known Non-Bug Quirks`), check whether it still
+holds the empty template placeholder text (e.g. "not yet configured") or
+already has real content.
 
 For each section that's still a placeholder, ask the user (one question
 at a time, via `AskUserQuestion` where the answer is a clear choice, or
 a direct question when it's open-ended free text):
 
-1. **Base URL**: "What's the base URL for this project? (e.g.
-   `https://staging.example.com`)"
-2. **Site Structure**: "What are the main sidebar sections or tabs, and
+1. **Site Structure**: "What are the main sidebar sections or tabs, and
    their routes? (e.g. Dashboard → `/dashboard`, Settings → `/settings`)"
-3. **Test Credentials**: "Where are test user credentials for this
-   project kept? (Never paste an actual password — give a reference,
-   e.g. '1Password vault: QA-Otonomi, entry: staging-test-user'.)" If the
-   user tries to paste a real plaintext password, stop them and ask for
-   a reference instead — do not write a plaintext credential into this
-   file.
-4. **Known Non-Bug Quirks**: "Are there any known visual/UX behaviors
+2. **Known Non-Bug Quirks**: "Are there any known visual/UX behaviors
    that are intentional, not bugs, that qa-blackbox should not report?
    (e.g. 'sidebar collapses on mobile by design'). If none, say so —
    it's fine to leave this section explicitly empty."
@@ -74,7 +85,7 @@ Write each answer into the corresponding section of
 placeholder or prior content — never rewrite the whole file from
 scratch, since a re-run must preserve untouched sections exactly.
 
-## Step 3 — Fill in or update `context/regression-flows.md`
+## Step 4 — Fill in or update `context/regression-flows.md`
 
 Read `context/regression-flows.md` first. If it still has no `## Flow:`
 entries (just the empty-state placeholder text), ask: "What are this
@@ -106,18 +117,22 @@ If the file already has flows, ask: "This project already has N
 regression flows: `<list their names>`. Do you want to add a new one,
 update an existing one, or are we done?" and loop accordingly.
 
-## Step 4 — Summary
+## Step 5 — Summary
 
-Once done, show the user a short summary of what's now in
-`context/navigation-map.md` (filled sections vs. still-empty ones) and
+Once done, show the user a short summary of what's now in `.env`
+(configured or still needs filling in — never show its actual values),
+`context/navigation-map.md` (filled sections vs. still-empty ones), and
 `context/regression-flows.md` (flow count and names), and tell them
 they're ready to run `qa-blackbox`, `qa-smoke-test`, or `qa-regression`.
 
 ## Constraints
 
-- Never write a plaintext credential or secret into `context/` — always
-  a reference to where it's stored.
+- Never write any credential or secret value into `context/` or any
+  other tracked file — `.env` is the only place they belong, and this
+  skill never writes to `.env` itself, only checks whether it exists.
+- Never ask the user to paste a real `.env` value into the chat, and
+  never read or print `.env`'s contents.
 - Never overwrite a section the user didn't ask to change.
-- Never fabricate a flow, URL, or credential reference the user didn't
+- Never fabricate a flow, site-structure entry, or quirk the user didn't
   actually provide — leave a section as its explicit placeholder rather
   than guessing.
