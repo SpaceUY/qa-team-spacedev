@@ -19,7 +19,7 @@
   | Exploratory | `qa-blackbox` (adapted) | `navigation-map.md` | — |
   | Smoke | `qa-smoke-test` (new) | — (ticket passed at invocation) | `regression-flows.md` (conditionally) |
   | Regression | `qa-regression` (new) | `regression-flows.md` | `regression-flows.md` (last-run history) |
-- **`qa-blackbox`'s existing protocol is unchanged** except for one new step: reading `context/navigation-map.md` before running its standard scenarios. Scoring model, standard scenario table, and report format stay exactly as they are today.
+- **`qa-blackbox`'s existing protocol is unchanged** except for two additions made across Task 5 and Task 5b: reading `context/navigation-map.md` before running its standard scenarios (Task 5), and an Error Guessing heuristics checklist applied alongside the standard scenarios (Task 5b, added after user feedback during implementation). Scoring model, standard scenario table (S1-S12), and report format stay exactly as they are today.
 - **`qa-smoke-test`'s ticket context is never persisted** in `context/` — always fetched fresh from ClickUp via the ClickUp MCP at invocation time (spec, "Smoke").
 - **`qa-smoke-test`'s end-of-run regression sync is mandatory and interactive**, never assumed: after every run, ask the user (via `AskUserQuestion`) to choose Add / Update / Skip regarding `context/regression-flows.md`, and only write on Add or Update (spec, "Smoke" — "End-of-run regression sync").
 - **`qa-project-setup` is re-invocable, not one-shot**: running it again edits existing `context/` files rather than overwriting them blindly (spec, "The setup skill").
@@ -431,6 +431,85 @@ Expected: `## Reading Project Context` now appears as the first `##` heading, im
 ```bash
 git add .claude/skills/qa-blackbox/SKILL.md
 git commit -m "feat: qa-blackbox reads context/navigation-map.md before running scenarios"
+```
+
+---
+
+### Task 5b: Add an Error Guessing heuristics section to `qa-blackbox`
+
+**Files:**
+- Modify: `.claude/skills/qa-blackbox/SKILL.md`
+
+**Interfaces:**
+- Consumes: nothing from other tasks.
+- Produces: nothing new consumed by later tasks — this is a second, independent addition to `qa-blackbox` (added after Task 5 was already approved and merged, per user feedback that the skill was missing an error-guessing heuristics step alongside its standard scenario checklist). It does not touch anything Task 5 added — the "Reading Project Context" section stays exactly as Task 5 left it.
+
+**Why this task exists separately from Task 5:** Error guessing is not an installable skill or plugin anywhere — it's a classic exploratory-testing technique (using tester experience to guess where bugs are statistically likely: boundary values, empty/null inputs, double-submit, special characters, race conditions, etc.), not a piece of software to install. The user asked for it as a **new section inside `qa-blackbox`**, not a separate invocable skill — same placement pattern as Task 5's "Reading Project Context" section, added independently so Task 5's already-approved diff isn't reopened.
+
+- [ ] **Step 1: Read the current file and locate the insertion point**
+
+```bash
+cd /Users/juliadisarli/Documents/GitHub/qa-team
+grep -n "^## " .claude/skills/qa-blackbox/SKILL.md
+```
+
+Expected headings in order (per Task 5's output): `## Reading Project Context`, `## Quality Dimensions & Scoring`, then the file's other existing sections (severity classification, report format, accessibility checks, scoring example, rules). Insert the new section right after `## Reading Project Context` and before `## Quality Dimensions & Scoring` — so both context-gathering steps (navigation context, then error-guessing heuristics) run before scoring begins, in the order an agent would naturally want them: know the app, then know what to specifically hunt for.
+
+- [ ] **Step 2: Insert the "Error Guessing Heuristics" section**
+
+```markdown
+## Error Guessing Heuristics
+
+Alongside the standard scenario checklist (S1-S12, below), apply
+experience-based error guessing: bugs cluster around a known set of
+situations more than random chance would predict. Check each of these
+against every input, form, and interactive element you encounter,
+in addition to (never instead of) running the standard scenarios:
+
+- **Boundary values** — the smallest/largest accepted value, one below
+  the minimum, one above the maximum (e.g. a quantity field: 0, -1,
+  the max allowed, max+1).
+- **Empty and null inputs** — submitting a required field empty, or a
+  field that accepts an empty string where a null/undefined might slip
+  through instead.
+- **Special characters and encoding** — unicode, emoji, SQL-metacharacters
+  (`'`, `--`, `;`), HTML/script tags in free-text fields (to check for
+  unescaped rendering, not to attempt exploitation — this is black-box
+  functional QA, not a penetration test).
+- **Double submission** — clicking a submit/pay/confirm button twice in
+  quick succession, or submitting a form and immediately navigating back
+  and re-submitting.
+- **Unexpected navigation** — using the browser back button mid-flow
+  (e.g. mid-checkout), refreshing on a confirmation page, or opening a
+  flow in two tabs at once.
+- **Long input** — a string far longer than the field visually
+  accommodates, to check for truncation, overflow, or layout breakage
+  rather than a graceful limit.
+- **Concurrent/rapid interaction** — rapidly toggling a control, or
+  triggering an action before a prior async operation (e.g. a save)
+  has finished.
+- **Wrong-type input where the UI allows it** — pasting text into a
+  numeric-looking field, or a date picker's text fallback with an
+  invalid date.
+
+Report anything these heuristics surface using the same Bug Register
+format and severity classification as everything else in this skill —
+this is a checklist for *where to look*, not a separate report section.
+```
+
+- [ ] **Step 3: Verify the edit didn't disturb anything else**
+
+```bash
+grep -n "^## " .claude/skills/qa-blackbox/SKILL.md
+```
+
+Expected: `## Reading Project Context`, `## Error Guessing Heuristics`, `## Quality Dimensions & Scoring`, then the rest of the file's existing headings in their original order — identical to Task 5's post-edit list except for the one new heading inserted between the first two.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add .claude/skills/qa-blackbox/SKILL.md
+git commit -m "feat: add Error Guessing heuristics section to qa-blackbox"
 ```
 
 ---
@@ -1045,3 +1124,4 @@ Summarize, per `superpowers:verification-before-completion`: results of Steps 1-
 - **Placeholder scan:** no TBD/TODO; every step has literal file content or literal commands with expected output. Task 9 Step 4 explicitly flags the one genuinely manual, non-automatable step (GitHub repo setting) rather than pretending a script could do it.
 - **Type/name consistency:** the `## Flow:` heading format, the four `navigation-map.md` section headers, and the skill names (`qa-project-setup`, `qa-smoke-test`, `qa-regression`) are used identically across Tasks 3, 5, 6, 7, 8, and verified for drift in Task 10 Step 3.
 - **Miscount caught and fixed during self-review:** Task 10 Step 2's file count is 7 (the two moved skills, the three new skills, and the two pre-existing ClickUp skills) — verified consistent with the explicit file list in the same line.
+- **Task 5b added mid-execution:** after Task 5 was already implemented, reviewed, and approved, the user pointed out `qa-blackbox` was missing an Error Guessing heuristics step. Task 5b was added as a new task (not a reopening of Task 5) to keep Task 5's already-approved diff intact; the affected Global Constraint bullet was updated to describe both additions. Task 10's verification steps (grep-based heading checks) should be read as covering the state after Task 5b too, even though they were written before Task 5b existed — the heading list Task 10 Step 3 checks against remains valid since Task 5b only adds one more heading in between two already-covered ones.
