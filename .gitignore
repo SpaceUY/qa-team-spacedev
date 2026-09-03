@@ -6,3 +6,5 @@ playwright-report/
 blob-report/
 .claude/settings.local.json
 .DS_Store
+.ok/
+.env

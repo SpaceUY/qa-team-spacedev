@@ -198,6 +198,9 @@ If the same flow is tested more than once on the same day, screenshots are numbe
 | `frontend-design:frontend-design` | Visual audit: typography, contrast, layout, UX | Automatic — part of the standard protocol |
 | `superpowers:verification-before-completion` | Verify real evidence before claiming work complete | Automatic — part of the standard protocol |
 | `qa-text-check` | Typo, grammar, mixed-language, and punctuation bugs in Spanish or English | **Manual only** — invoke explicitly with `/qa-text-check <url-or-flow> --lang=es\|en` |
+| `qa-project-setup` | Guided, re-invocable setup of `context/navigation-map.md` and `context/regression-flows.md` | **Manual only** — invoke explicitly with `/qa-project-setup` |
+| `qa-smoke-test` | Focused smoke test scoped to one ClickUp ticket's feature | **Manual only** — invoke explicitly with `/qa-smoke-test <ticket>` |
+| `qa-regression` | End-to-end execution of every documented core regression flow | **Manual only** — invoke explicitly with `/qa-regression` |
 | Playwright MCP (`mcp__playwright__*`) | Navigation, interaction, screenshots, DOM inspection | Required for all of the above |
 
 > **Required:** Playwright MCP must be connected before any QA session starts. See Step 0 above.

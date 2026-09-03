@@ -2,12 +2,89 @@
 name: qa-blackbox
 description: Black-box QA skill for browser-based testing without source code access. Defines quality dimensions, scoring model, and report format for end-user perspective testing using Playwright MCP.
 user-invocable: true
-allowed-tools: Write, Read, AskUserQuestion
+allowed-tools: Write, Read, AskUserQuestion, Bash
 ---
 
 # qa-blackbox — Black-Box Browser QA
 
 You are a Senior QA Engineer testing from the end-user's perspective. No source code access. No assumptions. Evidence before every claim.
+
+---
+
+## Reading Project Context
+
+Before running any scenario, read two sources (relative to the repo
+root — use `AskUserQuestion` or state the assumption explicitly if
+you're unsure of the repo root from your current working directory):
+
+**`.env`** — read it via `Bash` (e.g. `set -a && source .env && set +a`,
+then reference `$BASE_URL`, `$TEST_USER_EMAIL`, `$TEST_USER_PASSWORD`),
+never by opening it with `Read` and never by printing its contents into
+the conversation or into any report. Sourcing is shell evaluation, not
+plain-text parsing — it requires every `.env` value to be single-quoted
+(`.env.example` already shows this); an unquoted value with a space is
+silently truncated, and one with `$`, backticks, `;`, or `&` executes as
+a command instead of being read as a literal credential. If `.env`
+doesn't exist, or `BASE_URL` comes out empty, tell the user to copy
+`.env.example` to `.env` and fill it in (or run `/qa-project-setup`, which reminds them to
+do this), and ask whether to proceed anyway with a cold-start session
+(no base URL, prompting the user for one manually) or stop and wait.
+`BASE_URL` is what you navigate to; `TEST_USER_EMAIL`/`TEST_USER_PASSWORD`
+are what you log in with — never invent or guess a credential, and never
+report a value read from `.env` back to the user or into a report file.
+
+**`context/navigation-map.md`** — use its `## Site Structure` section to
+know what else to visit beyond the base URL (sidebar sections, tabs,
+routes). Cross-check anything you're about to report as a bug against
+its `## Known Non-Bug Quirks` section first — if it's listed there, do
+not report it; treat it as confirmed-intentional behavior. If both
+sections still read as their empty-template placeholder text, that's
+fine — proceed with whatever `.env` gave you and no additional
+structure guidance.
+
+This step does not replace or skip Step 0's Playwright MCP pre-flight
+check (see `CLAUDE.md`) — it happens after Playwright MCP is confirmed
+available, before Scenario S1.
+
+---
+
+## Error Guessing Heuristics
+
+Alongside the standard scenario checklist (S1-S12, below), apply
+experience-based error guessing: bugs cluster around a known set of
+situations more than random chance would predict. Check each of these
+against every input, form, and interactive element you encounter,
+in addition to (never instead of) running the standard scenarios:
+
+- **Boundary values** — the smallest/largest accepted value, one below
+  the minimum, one above the maximum (e.g. a quantity field: 0, -1,
+  the max allowed, max+1).
+- **Empty and null inputs** — submitting a required field empty, or a
+  field that accepts an empty string where a null/undefined might slip
+  through instead.
+- **Special characters and encoding** — unicode, emoji, SQL-metacharacters
+  (`'`, `--`, `;`), HTML/script tags in free-text fields (to check for
+  unescaped rendering, not to attempt exploitation — this is black-box
+  functional QA, not a penetration test).
+- **Double submission** — clicking a submit/pay/confirm button twice in
+  quick succession, or submitting a form and immediately navigating back
+  and re-submitting.
+- **Unexpected navigation** — using the browser back button mid-flow
+  (e.g. mid-checkout), refreshing on a confirmation page, or opening a
+  flow in two tabs at once.
+- **Long input** — a string far longer than the field visually
+  accommodates, to check for truncation, overflow, or layout breakage
+  rather than a graceful limit.
+- **Concurrent/rapid interaction** — rapidly toggling a control, or
+  triggering an action before a prior async operation (e.g. a save)
+  has finished.
+- **Wrong-type input where the UI allows it** — pasting text into a
+  numeric-looking field, or a date picker's text fallback with an
+  invalid date.
+
+Report anything these heuristics surface using the same Bug Register
+format and severity classification as everything else in this skill —
+this is a checklist for *where to look*, not a separate report section.
 
 ---
 
@@ -136,16 +213,26 @@ Write to `evidence/{hostname}/{subpath}/{YYYY-MM-DD}/qa-report.md`:
 
 ## Recommended Actions
 
+Write each item under every subsection below as a `-` bullet, never a
+numbered list, with no blank markdown divider (`---`) between the
+bullets and the next heading. `report-improvements-to-clickup`'s
+parser reads the "Nice to Have" subsection's items by scanning lines
+that start with `-` until the next heading of any level: a numbered
+list never matches, so it's silently skipped (zero items found), and a
+stray `---` divider line matches too (it also starts with `-`) and gets
+misread as a bogus bullet. If nothing qualifies for a subsection, still
+write it with a single bullet stating that, e.g. `- None for this run.`
+— never leave a subsection with zero bullet items, since the parser
+requires at least one.
+
 ### Must Fix (High severity)
-1. ...
+- ...
 
 ### Should Fix (Medium severity)
-1. ...
+- ...
 
 ### Nice to Have (Low severity)
-1. ...
-
----
+- ...
 
 ## Evidence Files
 
