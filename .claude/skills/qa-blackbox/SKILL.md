@@ -11,6 +11,27 @@ You are a Senior QA Engineer testing from the end-user's perspective. No source 
 
 ---
 
+## Viewport Scope
+
+This skill never decides its own viewport scope — `CLAUDE.md`'s Step
+0.5 always asks the user (Desktop only / Mobile only / Both) before
+this skill is invoked, and passes the answer in as `{viewport_scope}`
+via this invocation's `args`. If this skill is somehow invoked without
+a `{viewport_scope}` in `args` (e.g. a direct manual invocation outside
+the normal CLAUDE.md flow), ask the same question yourself via
+`AskUserQuestion` before proceeding — never default silently to
+"Both" or to any single viewport.
+
+Every "Dual Viewport" / "375×667 and 1440×900" instruction below
+means: run it for whichever viewport(s) `{viewport_scope}` names.
+Scenario S11 (Mobile layout) only runs if scope includes Mobile;
+S12 (Desktop layout) only runs if scope includes Desktop. The report's
+`**Viewport(s):**` line and every screenshot set reflect only the
+in-scope viewport(s) — never claim coverage of a viewport that wasn't
+actually tested.
+
+---
+
 ## Reading Project Context
 
 Before running any scenario, read two sources (relative to the repo
@@ -138,7 +159,7 @@ Write to `evidence/{hostname}/{subpath}/{YYYY-MM-DD}/qa-report.md`:
 
 **Date:** YYYY-MM-DD
 **URL:** {full URL}
-**Viewport:** 375 × 667 px (Mobile First)
+**Viewport(s):** {whichever of 375 × 667 px (Mobile) / 1440 × 900 px (Desktop) `{viewport_scope}` covers}
 **Quality Score:** XX/100
 
 ---

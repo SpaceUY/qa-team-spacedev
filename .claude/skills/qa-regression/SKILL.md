@@ -19,6 +19,23 @@ anything else. If not, stop immediately with the same halted-session
 message pattern as the other skills' Step 0 ("**Regression run halted —
 Playwright MCP is not connected.**").
 
+## Step 0.5 — Scope Selection: Desktop, Mobile, or Both
+
+Ask the user via `AskUserQuestion`, before reading any context or
+touching the browser:
+
+> "What's the scope for this regression run?"
+> 1. **Desktop only** (1440×900)
+> 2. **Mobile only** (375×667)
+> 3. **Both** (Desktop + Mobile) — recommended default
+
+Ask this **once for the whole run** — every flow selected in Step 2
+uses the same `{viewport_scope}`, not a per-flow choice. Never assume
+"Both" and skip the question. Carry `{viewport_scope}` into Step 3
+(evidence screenshots and checks happen only at the in-scope
+viewport(s)) and into each flow's report in Step 5 (state the actual
+viewport(s) tested, never claim coverage of one that wasn't).
+
 ## Step 1 — Reading Project Context
 
 Read `context/navigation-map.md`'s `## Site Structure` section for
@@ -116,6 +133,7 @@ can parse each one without any changes:
 
 **Date:** YYYY-MM-DD
 **URL:** {flow's URL, from its first Steps entry that names one}
+**Viewport(s):** {whichever of 375 × 667 px (Mobile) / 1440 × 900 px (Desktop) `{viewport_scope}` covers}
 
 ---
 

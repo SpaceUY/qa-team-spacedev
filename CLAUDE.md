@@ -29,6 +29,40 @@ When the user provides **a URL and a flow to test** (e.g. "navigate to http://�
 
 Do not attempt any navigation, screenshot, or test step without Playwright MCP. Do not proceed.
 
+### Step 0.5 — Scope Selection: Desktop, Mobile, or Both
+
+**Before invoking any skill or touching the browser**, ask the user
+which viewport scope this session should cover, via `AskUserQuestion`:
+
+> "What's the scope for this QA session?"
+> 1. **Desktop only** (1440×900)
+> 2. **Mobile only** (375×667)
+> 3. **Both** (Desktop + Mobile) — recommended default
+
+Never assume "Both" and skip the question, even if the user's message
+already mentions a URL and flow — this question always fires, every
+time, before Step 1. Ask it **once per session** — for a Full Site
+Audit, this applies to the whole audit (all discovered paths use the
+same scope), not once per path.
+
+Carry the answer forward as `{viewport_scope}` into every skill
+invoked this session (`qa-blackbox`, `qa-smoke-test`, `qa-regression`,
+`frontend-design:frontend-design`) — pass it explicitly in the skill's
+`args`. Every scenario, screenshot, and report section that
+`CLAUDE.md` or a skill describes as covering "both viewports" or
+"375×667 and 1440×900" instead covers only the viewport(s) named by
+`{viewport_scope}`:
+
+- **Desktop only**: run S12 (or the flow's desktop-equivalent check),
+  skip S11. Reports state a single `**Viewport:** 1440 × 900 px
+  (Desktop)`.
+- **Mobile only**: run S11 (or the flow's mobile-equivalent check),
+  skip S12. Reports state a single `**Viewport:** 375 × 667 px
+  (Mobile)`.
+- **Both**: run S11 and S12 as written throughout this document —
+  this is the only scope where the existing dual-viewport instructions
+  apply unchanged.
+
 ---
 
 1. Invoke skills in this order:
@@ -224,10 +258,10 @@ For **any authentication flow** (register, login, password reset), run in order:
 | S8 | Invalid credentials | Functional + Security |
 | S9 | Reverse happy path (login after register) | Functional E2E |
 | S10 | Accessibility audit (labels, headings, roles) | A11y |
-| S11 | Mobile layout 375×667 without overflow | Responsiveness |
-| S12 | Desktop layout 1440×900 without overflow or broken alignment | Responsiveness |
+| S11 | Mobile layout 375×667 without overflow | Responsiveness — run only if `{viewport_scope}` includes Mobile |
+| S12 | Desktop layout 1440×900 without overflow or broken alignment | Responsiveness — run only if `{viewport_scope}` includes Desktop |
 
-For **other flows** (checkout, onboarding, forms), adapt scenarios to the flow context, always covering: validations, happy path, errors, a11y, mobile responsiveness, and desktop responsiveness.
+For **other flows** (checkout, onboarding, forms), adapt scenarios to the flow context, always covering: validations, happy path, errors, a11y, and responsiveness for whichever viewport(s) `{viewport_scope}` includes.
 
 ---
 
@@ -238,7 +272,7 @@ For **other flows** (checkout, onboarding, forms), adapt scenarios to the flow c
 
 **Date:** YYYY-MM-DD
 **URL:** {full URL}
-**Viewports:** 375 × 667 px (Mobile) · 1440 × 900 px (Desktop)
+**Viewport(s):** {whichever of 375 × 667 px (Mobile) / 1440 × 900 px (Desktop) the session's `{viewport_scope}` covers}
 **Quality Score:** XX/100
 
 ## Executive Summary
@@ -291,7 +325,7 @@ Permanent evidence lives only in `evidence/`. No disposable scripts, ever.
 
 - **Playwright MCP required:** If `mcp__playwright__*` tools are not available, stop and alert the user (see Step 0). Never attempt to work around this with scripts.
 - **No scripts:** Never create `qa-*.js` or any temporary `.js` file. Use Playwright MCP tools directly (see 🧹 section).
-- **Dual Viewport:** Test every flow at both 375×667 px (Mobile) and 1440×900 px (Desktop). Take screenshots at both sizes. Report responsiveness issues for each viewport separately.
+- **Scope-driven viewport testing:** Never start testing without first asking Step 0.5's scope question. Test the flow at whichever of 375×667 px (Mobile) / 1440×900 px (Desktop) the chosen `{viewport_scope}` includes — both, by default, if the user picked "Both". Take screenshots at every viewport in scope. Report responsiveness issues for each in-scope viewport separately.
 - **Immediate screenshots:** Every detected bug gets a screenshot at the moment of discovery.
 - **No assumptions:** If a button does not respond, report it as a functional blocker — never assume why.
 - **Real verification:** Do not claim work complete without showing the happy path success screenshot.
