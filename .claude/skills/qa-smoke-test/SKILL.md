@@ -19,6 +19,22 @@ else. If not, stop immediately and tell the user, same message pattern
 as `CLAUDE.md`'s Step 0 ("Text QA halted" style, adapted: "**Smoke test
 halted — Playwright MCP is not connected.**").
 
+## Step 0.5 — Scope Selection: Desktop, Mobile, or Both
+
+Ask the user via `AskUserQuestion`, before fetching the ticket or
+touching the browser:
+
+> "What's the scope for this smoke test?"
+> 1. **Desktop only** (1440×900)
+> 2. **Mobile only** (375×667)
+> 3. **Both** (Desktop + Mobile) — recommended default
+
+Never skip this or assume "Both" — ask every time this skill runs.
+Carry the answer forward as `{viewport_scope}` through Steps 2-4: take
+evidence screenshots and check the happy path only at the in-scope
+viewport(s), and state the actual viewport(s) tested in the report
+(Step 4), never claiming coverage of one that wasn't tested.
+
 ## Step 1 — Fetch the ticket, fresh, every time
 
 Take the ticket link or ID the user gave when invoking this skill.
@@ -87,6 +103,7 @@ changes:
 
 **Date:** YYYY-MM-DD
 **URL:** {full URL of the screen(s) tested}
+**Viewport(s):** {whichever of 375 × 667 px (Mobile) / 1440 × 900 px (Desktop) `{viewport_scope}` covers}
 
 ---
 
