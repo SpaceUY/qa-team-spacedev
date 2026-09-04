@@ -171,6 +171,8 @@ Evidence`). `qa-regression` also writes a session-level
 flows run in that session, the same pattern `qa-blackbox`'s Full Site
 Audit mode uses for multiple paths.
 
+### Creating ClickUp Tickets from QA Reports
+
 To turn a report's findings into ClickUp tickets, run one or both of
 these (manual, on-demand — they never run automatically):
 
@@ -178,9 +180,36 @@ these (manual, on-demand — they never run automatically):
 /report-bugs-to-clickup path/to/qa-report.md
 ```
 
-Creates one ClickUp bug ticket per row in the report's Bug Register, in
-the project's fixed Bugs List, associated with the active sprint, tagged
-by environment, assigned to you.
+**What this does:**
+1. Reads your report's **Bug Register** table (ID | Severity | Description | Evidence)
+2. Creates one ClickUp bug ticket per bug row in your fixed **Bugs List**
+3. Sets each ticket's status to **OPEN**
+4. Associates each ticket with the **active sprint**
+5. Tags tickets by **environment** (Staging, Production, etc.)
+6. Attaches **evidence screenshots** to each ticket
+7. Assigns tickets to you
+8. Shows a confirmation table before creating anything — **nothing is filed without your review**
+
+**Ticket Title Format:**
+Tickets are titled concisely for easy scanning:
+```
+[BUG-001] Saldo de Billetera Atrapado en "Cargando..."
+[BUG-002] Bottom Nav Superpone Contenido en Móvil
+```
+
+**Ticket Description:**
+Includes all context:
+- Full bug description
+- Steps to reproduce (if available)
+- Expected behavior
+- Severity level
+- Platform/Page affected
+- URL under test
+- Evidence screenshot filename
+- Your name as reporter
+
+**Language:**
+All ticket titles and descriptions are in the **language you selected at session start** (Step 0.4).
 
 ```bash
 /report-improvements-to-clickup path/to/qa-report.md
