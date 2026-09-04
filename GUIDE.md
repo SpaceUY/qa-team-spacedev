@@ -106,7 +106,41 @@ paste its contents into a chat message. Every testing skill below
 reads it directly; you only fill it in once per project (update it
 again only if credentials change).
 
-## 4. The testing skills
+## 4. Your First QA Session — Automatic Questions
+
+When you start Claude Code for the first time and initiate a QA session, you will be asked **two important questions** that establish how all reports and tickets are generated:
+
+### Step 0.4: Project Language Selection
+
+> **"What language does this project use?"**
+
+Choose one:
+- **Spanish (Español)** — All reports, findings, and ClickUp tickets will be in Spanish
+- **English** — All reports, findings, and ClickUp tickets will be in English  
+- **Bilingual (Es/En)** — Reports will include both languages; ClickUp tickets in the language you specify
+
+This selection applies to:
+- All QA reports (`qa-report.md`, `AUDIT-SUMMARY-*.md`)
+- All text QA findings (`text-qa-report.md`)
+- All ClickUp tickets created via `/report-bugs-to-clickup` and `/report-improvements-to-clickup`
+- All scenario names, bug descriptions, and recommendations
+
+**You are asked this once per session.** All testing and ticket creation that session will use the language you selected. See `CLAUDE.md` Step 0.4 for details.
+
+### Step 0.5: Viewport Scope Selection
+
+> **"What's the scope for this QA session?"**
+
+Choose one:
+- **Desktop only** — Test at 1440×900 px only
+- **Mobile only** — Test at 375×667 px only
+- **Both** (recommended default) — Test both desktop and mobile viewports
+
+This affects which responsiveness scenarios are run and reported. See `CLAUDE.md` Step 0.5 for details.
+
+---
+
+## 5. The testing skills
 
 Each skill below is manual and on-demand — none of them run
 automatically except `qa-blackbox`, which triggers automatically when
@@ -124,7 +158,7 @@ should be added to, or update, `context/regression-flows.md` — this is
 how the regression set stays current as features ship, without a
 separate manual step.
 
-## 5. Reports and tickets
+## 6. Reports and tickets
 
 `qa-blackbox`, `qa-text-check`, `qa-smoke-test`, and `qa-regression` all
 save evidence (a report plus screenshots) to

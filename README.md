@@ -35,6 +35,20 @@ claude
 
 Then tell Claude: *"Navigate to `<URL>` and test the `<flow>` flow."*
 
+**First Session Automatic Questions:**
+
+When you start your first QA session, Claude will automatically ask:
+
+1. **Project Language** — "What language does this project use?"
+   - Choose: Spanish (Español) / English / Bilingual
+   - All reports and ClickUp tickets will be generated in this language
+   
+2. **Viewport Scope** — "What's the scope for this QA session?"
+   - Choose: Desktop only / Mobile only / Both (recommended)
+   - Tests will run for the selected viewport(s) only
+
+These questions are asked once per session and apply to all reports and tickets created that session.
+
 ### Configuring `.env`
 
 After copying `.env.example` to `.env`, fill in:
