@@ -129,8 +129,19 @@ export function inferPage(reportPath) {
     .join(' ');
 }
 
-export function buildTicketTitle(bug, platform, environment, page) {
-  return `[BUG] ${platform} | ${environment} | ${page} | ${bug.description}`;
+export function buildTicketTitle(bug) {
+  // Extract just the first line/sentence from the description (before "—" or first 80 chars)
+  const descriptionStart = bug.description
+    .split(/[—–-]/)[0] // Split on em-dash or en-dash
+    .split('\n')[0]     // Take first line
+    .trim();
+
+  // Keep it concise: ID + description start (clean markdown if present)
+  const cleanDescription = descriptionStart
+    .replace(/^\*\*/, '')  // Remove leading **
+    .replace(/\*\*$/, ''); // Remove trailing **
+
+  return `[${bug.id}] ${cleanDescription}`;
 }
 
 export function buildTicketDescription(bug, header, reporterName) {
@@ -150,6 +161,32 @@ export function buildTicketDescription(bug, header, reporterName) {
     'Additional information:',
     `Original ID: ${bug.id}`,
     `Severity: ${bug.severity}`,
+    `URL: ${header.url}`,
+    `Evidence: ${bug.evidence}`,
+    `Reported by: ${reporterName}`,
+  ].join('\n');
+}
+
+// Overload version that accepts platform and page (for future use/documentation)
+export function buildTicketDescriptionWithContext(bug, header, reporterName, platform, page) {
+  return [
+    'Preconditions:',
+    '-',
+    '',
+    'Steps to reproduce:',
+    '-',
+    '',
+    'Actual Result:',
+    bug.description,
+    '',
+    'Expected result:',
+    '-',
+    '',
+    'Additional information:',
+    `Original ID: ${bug.id}`,
+    `Severity: ${bug.severity}`,
+    `Platform: ${platform}`,
+    `Page: ${page}`,
     `URL: ${header.url}`,
     `Evidence: ${bug.evidence}`,
     `Reported by: ${reporterName}`,
@@ -184,11 +221,13 @@ export function buildTickets({ markdownText, reportPath, sprintLists, today, rep
   const page = inferPage(reportPath);
 
   const tickets = bugRegisterResult.bugs.map((bug) => ({
-    title: buildTicketTitle(bug, platform, environment, page),
+    title: buildTicketTitle(bug),
     description: buildTicketDescription(bug, headerResult, reporterName),
     severity: bug.severity,
     environment,
     evidence: bug.evidence,
+    platform,
+    page,
   }));
 
   return {
