@@ -50,7 +50,7 @@ This guided, re-invocable skill will:
 **Re-run it any time** the app's structure changes or a core flow's
 steps change — it edits what's there instead of overwriting it.
 
-## 3. Configure `.env`
+## 3. Configure `.env` (Application & ClickUp Integration)
 
 Copy the example file and fill in real values for your project:
 
@@ -60,6 +60,8 @@ cp .env.example .env
 
 Edit `.env` and set:
 
+### Application Configuration
+
 - `BASE_URL` — your project's base URL (e.g.
   `https://staging.your-client.com`).
 - `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` — a test user's real
@@ -68,7 +70,28 @@ Edit `.env` and set:
 - `API_KEY` — only if your site needs one; leave it commented out
   otherwise.
 
-**Single-quote every value** (e.g. `TEST_USER_PASSWORD='p@ss word!'`).
+### ClickUp Integration (Required for Creating Tickets)
+
+To create QA bug and improvement tickets in ClickUp from reports, add:
+
+- `CLICKUP_API_KEY` — your Personal Access Token from ClickUp
+  (generate at `https://app.clickup.com/settings` → API → Generate Token).
+  Token format: begins with `pk_`.
+- `CLICKUP_BUGS_LIST_ID` — the ID of your "Bugs" list in ClickUp
+  (find it in the URL when viewing the list: `/l/[LIST_ID]/`).
+- `CLICKUP_SPRINT_LIST_ID` — the ID of your active Sprint list in ClickUp
+  (where created tickets will be associated for sprint tracking).
+
+**Finding ClickUp List IDs:**
+1. Open ClickUp and navigate to your project
+2. Click on the list you want (e.g., "Bugs", "Active Sprint")
+3. Copy the URL from your browser address bar
+4. Extract the list ID from the path: `https://app.clickup.com/[WORKSPACE]/v/l/[LIST_ID]/...`
+5. Use only the numeric part (e.g., `901408710081`, not `6-901408710081-1`)
+
+**Important Quoting Rules:**
+
+Single-quote every value (e.g. `TEST_USER_PASSWORD='p@ss word!'`).
 The testing skills read `.env` by having the shell `source` it, not by
 parsing it as plain key/value pairs — so an unquoted value containing a
 space is silently cut short, and an unquoted value containing `$`,
@@ -76,8 +99,10 @@ backticks, `;`, or `&` runs as a shell command instead of being treated
 as a literal credential. `.env.example` already shows every value
 quoted; keep that quoting when you fill in real values.
 
-**`.env` is gitignored — it is never committed, and you should never
-paste its contents into a chat message.** Every testing skill below
+**Security:**
+
+`.env` is gitignored — it is never committed, and you should never
+paste its contents into a chat message. Every testing skill below
 reads it directly; you only fill it in once per project (update it
 again only if credentials change).
 
