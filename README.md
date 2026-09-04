@@ -29,11 +29,40 @@ files executed by a CLI).
 ```bash
 npx playwright install chromium   # one-time
 cp .claude/settings.local.json.example .claude/settings.local.json
-cp .env.example .env   # then fill in BASE_URL and test credentials (keep every value single-quoted — see below)
+cp .env.example .env   # then fill in BASE_URL, test credentials, and ClickUp settings (keep all values single-quoted — see GUIDE.md)
 claude
 ```
 
 Then tell Claude: *"Navigate to `<URL>` and test the `<flow>` flow."*
+
+**First Session Automatic Questions:**
+
+When you start your first QA session, Claude will automatically ask:
+
+1. **Project Language** — "What language does this project use?"
+   - Choose: Spanish (Español) / English / Bilingual
+   - All reports and ClickUp tickets will be generated in this language
+   
+2. **Viewport Scope** — "What's the scope for this QA session?"
+   - Choose: Desktop only / Mobile only / Both (recommended)
+   - Tests will run for the selected viewport(s) only
+
+These questions are asked once per session and apply to all reports and tickets created that session.
+
+### Configuring `.env`
+
+After copying `.env.example` to `.env`, fill in:
+
+**Application:**
+- `BASE_URL` — staging/test environment URL
+- `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` — test account credentials
+
+**ClickUp Integration (for creating bug/improvement tickets):**
+- `CLICKUP_API_KEY` — Personal Access Token from ClickUp (generate at https://app.clickup.com/settings → API)
+- `CLICKUP_BUGS_LIST_ID` — numeric ID of your "Bugs" list (from URL: `/l/[ID]/`)
+- `CLICKUP_SPRINT_LIST_ID` — numeric ID of your active Sprint list (from URL: `/l/[ID]/`)
+
+⚠️ **All values must be single-quoted** to protect special characters: `CLICKUP_API_KEY='pk_...'`
 
 At session start, the following skills should appear in the available
 skills banner: `qa-blackbox`, `qa-text-check`, `qa-project-setup`,
