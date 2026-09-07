@@ -59,8 +59,8 @@ After copying `.env.example` to `.env`, fill in:
 
 **ClickUp Integration (for creating bug/improvement tickets):**
 - `CLICKUP_API_KEY` — Personal Access Token from ClickUp (generate at https://app.clickup.com/settings → API)
-- `CLICKUP_BUGS_LIST_ID` — numeric ID of your "Bugs" list (from URL: `/l/[ID]/`)
-- `CLICKUP_SPRINT_LIST_ID` — numeric ID of your active Sprint list (from URL: `/l/[ID]/`)
+- ~~`CLICKUP_BUGS_LIST_ID`~~ — **Not needed anymore** (v3.0+) — you provide Bugs List ID when running `/report-bugs-to-clickup` (remembered in chat)
+- ~~`CLICKUP_SPRINT_LIST_ID`~~ — **Not needed anymore** (v3.0+) — you provide Sprint List ID each time (rotates every 15 days)
 
 ⚠️ **All values must be single-quoted** to protect special characters: `CLICKUP_API_KEY='pk_...'`
 
@@ -184,20 +184,32 @@ and does not run in CI.
 
 The `report-bugs-to-clickup` skill (`.claude/skills/report-bugs-to-clickup/`)
 reads any `qa-report.md`'s Bug Register table and creates one ClickUp bug
-ticket per row, in the project's fixed Bugs List, additionally associated
-with the active sprint, tagged by environment and assigned to the
-logged-in ClickUp user.
+ticket per row. Each ticket:
 
-This is a manual, on-demand skill — it does not run automatically at the
-end of a `qa-blackbox` session. Run it explicitly when you're ready to
+- **Bugs List ID:** You provide it in Step 1 (remembered in chat for future runs in same conversation)
+- **Template structure:** Fully completed with Precondition, Steps to reproduce, Actual result, Expected result, Additional information
+- **Evidence:** Screenshots attached as files + markdown image references
+- **Environment:** Tagged by environment (`staging`, `production`, `dev`)
+- **Assigned to:** You select who owns these tickets — supports team workflows
+- **Sprint:** Added manually post-creation (you provide Sprint List ID each time)
+
+This is a manual, on-demand skill — run it explicitly when you're ready to
 file tickets:
 
 ```bash
 /report-bugs-to-clickup path/to/qa-report.md
 ```
 
-See `docs/superpowers/specs/2026-09-01-report-bugs-to-clickup-design.md`
-for the full design.
+**Workflow:**
+1. Provide your **Bugs List ID** (remembered in chat) → e.g., `901408710081`
+2. Provide current **Sprint List ID** (each run) → e.g., `90142630767`
+3. Select **assignee** (email, username, or "me") → e.g., `julia.disarli`
+4. Review confirmation table
+5. Tickets created in Bugs List
+6. **Manually add to Sprint** in ClickUp (clear instructions provided)
+
+See `.claude/skills/report-bugs-to-clickup/GUIDE.md` for detailed walkthrough and
+`.claude/skills/report-bugs-to-clickup/CHANGELOG.md` for version history.
 
 ## Reporting improvements to ClickUp
 
