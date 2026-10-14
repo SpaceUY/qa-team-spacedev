@@ -124,11 +124,9 @@ BASE_URL='http://localhost:5173'
 TEST_USER_EMAIL='test@example.com'
 TEST_USER_PASSWORD='password123'
 CLICKUP_API_KEY='pk_...'           (solo si usas ClickUp)
-CLICKUP_BUGS_LIST_ID='...'         (solo si usas ClickUp)
-CLICKUP_SPRINT_LIST_ID='...'       (solo si usas ClickUp)
 ```
 
-### `.claude/settings.json` (opcional pero recomendado)
+### `.claude/settings.local.json` (copia de `settings.local.json.example`)
 ```json
 {
   "mcpServers": {

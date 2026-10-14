@@ -59,8 +59,7 @@ After copying `.env.example` to `.env`, fill in:
 
 **ClickUp Integration (for creating bug/improvement tickets):**
 - `CLICKUP_API_KEY` — Personal Access Token from ClickUp (generate at https://app.clickup.com/settings → API)
-- ~~`CLICKUP_BUGS_LIST_ID`~~ — **Not needed anymore** (v3.0+) — you provide Bugs List ID when running `/report-bugs-to-clickup` (remembered in chat)
-- ~~`CLICKUP_SPRINT_LIST_ID`~~ — **Not needed anymore** (v3.0+) — you provide Sprint List ID each time (rotates every 15 days)
+- The Bugs List ID and Sprint List ID are not set in `.env`. `/report-bugs-to-clickup` asks for them in chat (the Bugs List ID is remembered for the conversation; the Sprint List ID is asked each run, since sprints rotate every 15 days).
 
 ⚠️ **All values must be single-quoted** to protect special characters: `CLICKUP_API_KEY='pk_...'`
 
@@ -201,9 +200,9 @@ file tickets:
 ```
 
 **Workflow:**
-1. Provide your **Bugs List ID** (remembered in chat) → e.g., `901408710081`
-2. Provide current **Sprint List ID** (each run) → e.g., `90142630767`
-3. Select **assignee** (email, username, or "me") → e.g., `julia.disarli`
+1. Provide your **Bugs List ID** (remembered in chat) → e.g., `123456789012`
+2. Provide current **Sprint List ID** (each run) → e.g., `123456789013`
+3. Select **assignee** (email, username, or "me") → e.g., `jane.doe`
 4. Review confirmation table
 5. Tickets created in Bugs List
 6. **Manually add to Sprint** in ClickUp (clear instructions provided)
@@ -226,34 +225,43 @@ Also manual/on-demand:
 /report-improvements-to-clickup path/to/qa-report.md
 ```
 
-See
-`docs/superpowers/specs/2026-09-01-report-improvements-to-clickup-design.md`
-for the full design, including the fixed-List-plus-sprint-association
-model both skills share.
+See `.claude/skills/report-improvements-to-clickup/SKILL.md` for the full
+protocol, including the fixed-List-plus-sprint-association model both
+skills share.
 
 ## Project Structure
 
 ```
 qa-team/
 ├── .claude/
-│   ├── skills/
-│   │   ├── qa-blackbox/SKILL.md
-│   │   ├── qa-text-check/SKILL.md
-│   │   ├── qa-project-setup/SKILL.md
-│   │   ├── qa-smoke-test/SKILL.md
-│   │   ├── qa-regression/SKILL.md
+│   ├── agents/                        # Claude Code subagents (API, UI, regression)
+│   ├── skills/                        # single source of truth for all skills
+│   │   ├── qa-blackbox/               # exploratory audit (auto-triggered by URL + flow)
+│   │   ├── qa-text-check/
+│   │   ├── qa-smoke-test/
+│   │   ├── qa-regression/
+│   │   ├── qa-project-setup/
+│   │   ├── qa-platform-discovery/
+│   │   ├── qa-app-regression/
+│   │   ├── qa-api-regression/
+│   │   ├── qa-ad-hoc/
+│   │   ├── qa-evidence-discipline/    # shared rules, composed by the QA skills
+│   │   ├── qa-report-test-execution/  # internal: writes qa-report.md
+│   │   ├── qa-report-render/          # internal: renders the HTML report
 │   │   ├── report-bugs-to-clickup/
 │   │   └── report-improvements-to-clickup/
-│   ├── settings.local.json.example   # copy to settings.local.json
-│   └── settings.local.json           # gitignored, created locally
+│   ├── settings.local.json.example    # copy to settings.local.json
+│   └── settings.local.json            # gitignored, created locally
+├── .agents/skills                     # symlink to .claude/skills (for other agents)
+├── .github/workflows/e2e.yml          # CI for e2e-tests/
 ├── context/                           # this project's OK knowledge base
-│   ├── README.md
 │   ├── navigation-map.md
 │   └── regression-flows.md
-├── e2e-tests/                         # traditional Playwright Test suite (unchanged)
+├── e2e-tests/                         # Playwright Test suite (run with npm ci && npm test)
 ├── evidence/                          # gitignored — screenshots and reports
-├── docs/superpowers/                  # specs and plans (this document's own home)
-├── CLAUDE.md
+├── AGENTS.md                          # same protocol as CLAUDE.md, for Codex
+├── CLAUDE.md                          # protocol for Claude Code
+├── GUIDE.md                           # end-to-end setup walkthrough
 └── README.md
 ```
 

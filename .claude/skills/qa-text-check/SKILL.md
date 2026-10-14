@@ -24,12 +24,12 @@ by a JS framework, which is most of the UI copy in a modern SPA.
 
 - **Available**: continue to Step 1.
 - **Not available**: stop immediately and tell the user, same message
-  pattern as `qa-agent/CLAUDE.md` Step 0:
+  pattern as `CLAUDE.md` Step 0:
 
 > **Text QA halted — Playwright MCP is not connected.**
 >
 > The Playwright MCP server (`mcp__playwright__*`) is required and is
-> not available in this session. See `qa-agent/README.md`
+> not available in this session. See `README.md`
 > Troubleshooting section.
 
 Do not attempt navigation or a workaround without Playwright MCP.
@@ -117,7 +117,7 @@ do not treat it as a separate foreground step. Only once this step
 finishes do you report back to the user.
 
 Write to `evidence/{hostname}/{subpath}/{YYYY-MM-DD}/text-qa-report.md`,
-using the same hostname/subpath naming rules as `qa-agent/CLAUDE.md`
+using the same hostname/subpath naming rules as `CLAUDE.md`
 § "📁 Evidence Structure" (e.g. `/` → `root`, `localhost:5173` →
 `localhost-5173`). This is the same dated evidence folder the Step 2.3
 screenshots were saved into. If the day's folder already exists, add
@@ -183,7 +183,7 @@ nothing to find.
 - Never use `browser_evaluate` to simulate what `browser_snapshot`
   and `browser_take_screenshot` already handle, and never create
   `qa-*.js` or any temporary script file — same rule as
-  `qa-agent/CLAUDE.md` § "🧹 No Scripts — Ever".
+  `CLAUDE.md` § "🧹 No Scripts — Ever".
 - Never run this automatically as part of a `qa-blackbox` session —
   only on explicit `/qa-text-check` invocation.
 

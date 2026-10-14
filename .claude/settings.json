@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(git -C /Users/juliadisarli/Documents/GitHub/qa-team/qa-e2e-toolkit status)",
-      "Bash(git -C /Users/juliadisarli/Documents/GitHub/qa-team/qa-e2e-toolkit log --oneline)"
-    ]
-  }
-}

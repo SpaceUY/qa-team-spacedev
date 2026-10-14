@@ -22,7 +22,9 @@ new project:
    create your own, separate repo for this client/project — don't fork
    or clone-and-reinit by hand.
 2. Clone your new repo locally.
-3. Install prerequisites and set up the Playwright MCP — see
+3. Install the e2e test dependencies (`node_modules/` is not in the repo):
+   `cd e2e-tests && npm ci`
+4. Install prerequisites and set up the Playwright MCP — see
    `README.md`'s Quickstart section for the exact commands
    (`npx playwright install chromium`, copying
    `.claude/settings.local.json.example`).
@@ -77,17 +79,17 @@ To create QA bug and improvement tickets in ClickUp from reports, add:
 - `CLICKUP_API_KEY` — your Personal Access Token from ClickUp
   (generate at `https://app.clickup.com/settings` → API → Generate Token).
   Token format: begins with `pk_`.
-- `CLICKUP_BUGS_LIST_ID` — the ID of your "Bugs" list in ClickUp
-  (find it in the URL when viewing the list: `/l/[LIST_ID]/`).
-- `CLICKUP_SPRINT_LIST_ID` — the ID of your active Sprint list in ClickUp
-  (where created tickets will be associated for sprint tracking).
+The Bugs List ID and Sprint List ID are **not** stored in `.env`. The
+`/report-bugs-to-clickup` skill asks you for them in chat each session
+(the Bugs List ID is remembered for the rest of that conversation; the
+Sprint List ID is asked every run because sprints rotate).
 
-**Finding ClickUp List IDs:**
+**Finding ClickUp List IDs** (for when the skill asks):
 1. Open ClickUp and navigate to your project
 2. Click on the list you want (e.g., "Bugs", "Active Sprint")
 3. Copy the URL from your browser address bar
 4. Extract the list ID from the path: `https://app.clickup.com/[WORKSPACE]/v/l/[LIST_ID]/...`
-5. Use only the numeric part (e.g., `901408710081`, not `6-901408710081-1`)
+5. Use only the numeric part (e.g., `123456789012`, not `6-123456789012-1`)
 
 **Important Quoting Rules:**
 

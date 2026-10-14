@@ -22,12 +22,12 @@ The user's argument is the path to a `qa-report.md`. If no path was given, ask f
 Ask the user for **both** IDs:
 
 ### Bugs List ID
-- **Question:** "What is the ClickUp ID for your **Bugs List**?" (e.g., `901408710081`)
-- **Remembering:** Store this ID in chat/session memory. On next run of this skill in the same conversation, recall and confirm: "Using Bugs List `901408710081` — correct?" If user confirms, skip asking again in that conversation.
+- **Question:** "What is the ClickUp ID for your **Bugs List**?" (e.g., `123456789012`)
+- **Remembering:** Store this ID in chat/session memory. On next run of this skill in the same conversation, recall and confirm: "Using Bugs List `123456789012` — correct?" If user confirms, skip asking again in that conversation.
 - **Format:** The user provides the ID directly. This becomes `bugsListId`.
 
 ### Sprint List ID
-- **Question:** "What is the ClickUp ID for your current **Sprint List**?" (e.g., `90142630767`)
+- **Question:** "What is the ClickUp ID for your current **Sprint List**?" (e.g., `123456789013`)
 - **Remembering:** Sprint rotates every 15 days, so ask every time (no memory carry-over between conversations).
 - **Format:** The user provides the ID directly. This becomes `sprintListId`.
 
@@ -121,7 +121,7 @@ If a `clickup_create_task` call fails (e.g. the tag doesn't exist yet in the Spa
 
 After all tickets are successfully created in the Bugs List:
 
-1. **Notify the user** that tickets have been created in the Bugs List (`901408710081`)
+1. **Notify the user** that tickets have been created in the Bugs List (`123456789012`)
 2. **Provide manual instructions** for adding to the Sprint List:
    - "To associate these tickets to the current sprint, manually add each ticket to the Sprint List (`{sprintListId}`) by:"
    - "1. Opening each ticket in ClickUp"
@@ -178,4 +178,4 @@ Bugs List ID (for next run): {bugsListId}
 - Never fabricate content — only fill template sections with data explicitly stated in the QA report.
 - Never skip Step 3's confirmation, even if the user seems in a hurry.
 - All severities (High, Medium, Low) get tickets — do not filter by severity.
-- If the ClickUp MCP tools are not available in this session, stop immediately and tell the user, the same way `qa-agent`'s Playwright MCP pre-flight check does — do not attempt a workaround.
+- If the ClickUp MCP tools are not available in this session, stop immediately and tell the user, the same way the Playwright MCP pre-flight check in CLAUDE.md does — do not attempt a workaround.
