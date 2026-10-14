@@ -5,10 +5,10 @@
 ### ✅ Major Updates
 
 #### 1. Bugs List ID Remembered in Chat
-- **Before (v2.0):** Hardcoded per project (`901408710081` for ZENDA)
+- **Before (v2.0):** Hardcoded per project (`<BUGS_LIST_ID>` for ZENDA)
 - **Now (v3.0):** User provides Bugs List ID in Step 1 → **remembered for entire conversation**
 - **Benefit:** Supports multi-report sessions where same project's Bugs List is used repeatedly
-- **Example:** First run asks "What is your Bugs List ID?" → next run in same chat: "Using Bugs List 901408710081 — correct?" (no re-entry needed)
+- **Example:** First run asks "What is your Bugs List ID?" → next run in same chat: "Using Bugs List <BUGS_LIST_ID> — correct?" (no re-entry needed)
 
 #### 2. Manual Assignee Selection (No Auto "me")
 - **Before (v2.0):** Tickets automatically assigned to logged-in user ("me")
@@ -16,7 +16,7 @@
   - User can select self ("me"), teammate (email/username), or any ClickUp member
   - Resolved via `clickup_resolve_assignees` to get display name and user ID
 - **Benefit:** Single skill works for QA teams where different people report bugs
-- **Example:** "Who should own these tickets?" → "julia.disarli" → Resolved to "Julia Disarli" and included in table
+- **Example:** "Who should own these tickets?" → "julia.disarli" → Resolved to "QA Engineer" and included in table
 
 #### 3. Updated Workflow Steps
 - **Before:** Step 1 = Sprint List ID → Step 2 = Reporter (QA) resolution → Step 3 = Parse
@@ -47,7 +47,7 @@
 **First Run (v3.0):**
 ```
 Claude: What is the ClickUp ID for your Bugs List?
-You: 901408710081
+You: <BUGS_LIST_ID>
 
 Claude: What is the ClickUp ID for your Sprint List?
 You: 90142630767
@@ -60,7 +60,7 @@ Claude: [Shows confirmation table]
 
 **Second Run (Same Conversation):**
 ```
-Claude: Using Bugs List 901408710081 from earlier — correct?
+Claude: Using Bugs List <BUGS_LIST_ID> from earlier — correct?
 You: yes
 
 Claude: What is the ClickUp ID for your Sprint List?
@@ -122,7 +122,7 @@ Original ID: BUG-001 | Severity: High | Date: 2026-09-03
 #### 3. Sprint Association Moved to Manual Step
 - **Before:** Skill attempted automated `clickup_add_task_to_list` calls
 - **Now:** 
-  - Tickets created in Bugs List (`901408710081`) only
+  - Tickets created in Bugs List (`<BUGS_LIST_ID>`) only
   - Manual instructions provided for adding to Sprint
   - Reason: "Tasks in Multiple Lists" ClickApp may not be enabled on all workspaces
   - User-friendly: Clear post-creation guidance in final summary
@@ -223,7 +223,7 @@ The `parse-report.mjs` now ensures:
 
 **What stays the same:**
 - Same command: `/report-bugs-to-clickup <report-path>`
-- Same Bugs List ID: `901408710081`
+- Same Bugs List ID: `<BUGS_LIST_ID>`
 - Same environment tagging concept
 - Same evidence screenshot attachment
 

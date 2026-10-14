@@ -9,7 +9,7 @@ Convert QA report bugs into ClickUp tickets with complete template structure, ev
 ```
 
 Then provide:
-1. Your **Bugs List ID** (e.g., `901408710081`) — remembered in this chat for future runs
+1. Your **Bugs List ID** (e.g., `<BUGS_LIST_ID>`) — remembered in this chat for future runs
 2. Your current **Sprint List ID** (e.g., `90142630767`) — asked each time (Sprint rotates every 15 days)
 3. Who should **own these tickets** (email, username, or "me")
 
@@ -57,7 +57,7 @@ Expected result:
 
 Additional information:
 ![01-desktop-wallets.png](01-desktop-wallets.png)
-Original ID: BUG-001 | Severity: High | Reporter: Julia Disarli | Date: 2026-09-03
+Original ID: BUG-001 | Severity: High | Reporter: QA Engineer | Date: 2026-09-03
 ```
 
 **Important:** All sections are filled from the QA report data — nothing is left as a placeholder (`-`).
@@ -90,7 +90,7 @@ Example:
 
 ### Step 3: Provide Bugs List ID
 
-When prompted, enter your **Bugs List ID** (e.g., `901408710081`).
+When prompted, enter your **Bugs List ID** (e.g., `<BUGS_LIST_ID>`).
 
 **Where to find it:**
 - Open ClickUp → Your Workspace → Bugs List → Copy the URL/ID
@@ -99,8 +99,8 @@ When prompted, enter your **Bugs List ID** (e.g., `901408710081`).
 **Example:**
 ```
 Claude: What is the ClickUp ID for your Bugs List?
-You: 901408710081
-Claude: Got it! Using Bugs List 901408710081. (I'll remember this for the rest of this chat.)
+You: <BUGS_LIST_ID>
+Claude: Got it! Using Bugs List <BUGS_LIST_ID>. (I'll remember this for the rest of this chat.)
 ```
 
 ### Step 4: Provide Sprint List ID
@@ -128,7 +128,7 @@ When prompted, enter who should own these tickets:
 ```
 Claude: Who should these tickets be assigned to?
 You: julia.disarli
-Claude: Resolved to Julia Disarli (julia.disarli@company.com)
+Claude: Resolved to QA Engineer (julia.disarli@company.com)
 ```
 
 ### Step 6: Review & Confirm
@@ -137,7 +137,7 @@ The skill shows a confirmation table:
 
 | Title | Severity | Bugs List | Sprint List | Tag | Assignee |
 |-------|----------|-----------|-------------|-----|----------|
-| [BUG] [Staging] Wallets - "coinbase BTC"... | High | 901408710081 | 90142630767 | staging | Julia Disarli |
+| [BUG] [Staging] Wallets - "coinbase BTC"... | High | <BUGS_LIST_ID> | 90142630767 | staging | QA Engineer |
 
 **Confirm** to proceed with ticket creation.
 
@@ -153,10 +153,10 @@ Each ticket is created with:
 ```
 ✅ BUG-001 created (ID: 86bbvvhqq)
    Evidence: 01-desktop-wallets.png [attached]
-   Assigned to: Julia Disarli
+   Assigned to: QA Engineer
 ✅ BUG-002 created (ID: 86bbvvhrx)
    Evidence: 01-desktop-wallets.png [attached]
-   Assigned to: Julia Disarli
+   Assigned to: QA Engineer
 ```
 
 ### Step 8: Add to Sprint (Manual)
@@ -220,10 +220,10 @@ Wallet balance should load successfully or display a visible error message ("Bal
 
 Additional information:
 ![01-desktop-wallets.png](01-desktop-wallets.png)
-Original ID: BUG-001 | Severity: High | Reporter: Julia Disarli | Date: 2026-09-03
+Original ID: BUG-001 | Severity: High | Reporter: QA Engineer | Date: 2026-09-03
 
 Tag: staging
-Assigned to: Julia Disarli
+Assigned to: QA Engineer
 Attachment: 01-desktop-wallets.png ✅
 ```
 
@@ -256,7 +256,7 @@ To associate tickets to the sprint:
 - Restart Claude Code if needed
 
 ### "Ticket creation failed"
-- Check that the **Bugs List ID** (`901408710081`) exists in your workspace
+- Check that the **Bugs List ID** (`<BUGS_LIST_ID>`) exists in your workspace
 - Verify your ClickUp API key is valid in `.env`
 - Check that tags (`staging`, etc.) exist in your ClickUp space
 
@@ -343,7 +343,7 @@ Metadata and evidence:
 ```
 Additional information:
 ![01-desktop-wallets.png](01-desktop-wallets.png)
-Original ID: BUG-001 | Severity: High | Reporter: Julia Disarli | Date: 2026-09-03
+Original ID: BUG-001 | Severity: High | Reporter: QA Engineer | Date: 2026-09-03
 Related: BUG-002 (similar pattern on other wallets)
 ```
 

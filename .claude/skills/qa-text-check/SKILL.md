@@ -186,3 +186,15 @@ nothing to find.
   `qa-agent/CLAUDE.md` § "🧹 No Scripts — Ever".
 - Never run this automatically as part of a `qa-blackbox` session —
   only on explicit `/qa-text-check` invocation.
+
+---
+
+## Generating HTML Reports (Optional)
+
+This skill writes a markdown report (`qa-report.md`). For a formatted, self-contained HTML version, run the `qa-report-test-execution` skill on that file:
+
+```bash
+/qa-report-test-execution evidence/{hostname}/{flow}/{YYYY-MM-DD}/qa-report.md
+```
+
+The HTML is written next to the markdown in the same folder, works offline, and can be regenerated at any time without re-running the check. See `.claude/skills/qa-report-test-execution/README.md`.

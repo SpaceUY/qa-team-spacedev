@@ -2,12 +2,16 @@
 name: report-improvements-to-clickup
 description: Reads a qa-report.md's "Nice to Have" recommendations and creates one ClickUp Improvement ticket per bullet, in the project's fixed Improvements List, associated to the current sprint, assigned to the logged-in QA. Invoke manually with the path to a qa-report.md.
 user-invocable: true
-allowed-tools: Bash, Read, AskUserQuestion, mcp__claude_ai_ClickUp__clickup_get_workspace_hierarchy, mcp__claude_ai_ClickUp__clickup_get_list, mcp__claude_ai_ClickUp__clickup_create_task, mcp__claude_ai_ClickUp__clickup_resolve_assignees, mcp__claude_ai_ClickUp__clickup_add_task_to_list, mcp__claude_ai_ClickUp__clickup_request_attachment_upload
+allowed-tools: Bash, Read, AskUserQuestion, ToolSearch
 ---
 
 # report-improvements-to-clickup — Create ClickUp Improvement tickets from a QA report
 
 You turn a `qa-report.md`'s **"Nice to Have"** recommendations into ClickUp Improvement tickets, one ticket per bullet, in the project's fixed Improvements List, associated to the active sprint. This is a manual, on-demand skill — only run it when the user explicitly invokes `/report-improvements-to-clickup <path>`.
+
+## Prerequisite — resolve the ClickUp connector at run time
+
+The ClickUp MCP connector must be live. Discover its operations when this skill runs (`ToolSearch` for `clickup`), and never hardcode a tool name or server id: the connector is registered under an id that changes between sessions, so a name written into this file goes stale and silently blocks the calls this skill exists to make. If nothing resolves, STOP and say the connector is not live.
 
 ## Step 0 — Resolve the report path
 
@@ -17,12 +21,12 @@ The user's argument is the path to a `qa-report.md`. If no path was given, ask f
 
 Ask the user two things:
 
-1. **The project's fixed Improvements List** (e.g. "Otonomi Improvements") — every ticket created by this skill goes here, regardless of sprint. Use `mcp__claude_ai_ClickUp__clickup_get_list` to resolve its ID from the name; if ambiguous, use `mcp__claude_ai_ClickUp__clickup_get_workspace_hierarchy` to show the tree and let them pick. This becomes `destinationListId`.
-2. **The project's Sprints Folder** — call `mcp__claude_ai_ClickUp__clickup_get_workspace_hierarchy` with `max_depth: "2"`, locate the Folder, and collect every List inside it as `{id, name, startDate, endDate}` (converting millisecond timestamps to `YYYY-MM-DD`).
+1. **The project's fixed Improvements List** (e.g. "Otonomi Improvements") — every ticket created by this skill goes here, regardless of sprint. Use the connector's `clickup_get_list` operation to resolve its ID from the name; if ambiguous, use the connector's `clickup_get_workspace_hierarchy` operation to show the tree and let them pick. This becomes `destinationListId`.
+2. **The project's Sprints Folder** — call the connector's `clickup_get_workspace_hierarchy` operation with `max_depth: "2"`, locate the Folder, and collect every List inside it as `{id, name, startDate, endDate}` (converting millisecond timestamps to `YYYY-MM-DD`).
 
 ## Step 2 — Identify the reporting QA
 
-Call `mcp__claude_ai_ClickUp__clickup_resolve_assignees` with `assignees: ["me"]` to get the current user's ID and display name.
+Call the connector's `clickup_resolve_assignees` operation with `assignees: ["me"]` to get the current user's ID and display name.
 
 ## Step 3 — Run the parser
 
@@ -58,7 +62,7 @@ Ask the user to confirm. If they ask for changes (drop an improvement, edit a ti
 
 ## Step 5 — Create the tickets
 
-For each confirmed ticket, call `mcp__claude_ai_ClickUp__clickup_create_task`:
+For each confirmed ticket, call the connector's `clickup_create_task` operation:
 
 - `name`: the ticket's `title`
 - `list_id`: `destinationListId` (the fixed Improvements List from Step 1)
@@ -69,7 +73,7 @@ If creation fails, record the failure and continue to the next ticket — do not
 
 ### Associate the ticket to the active sprint
 
-After a ticket is created successfully, call `mcp__claude_ai_ClickUp__clickup_add_task_to_list` with the created task's ID and `result.sprintListId`. This requires the "Tasks in Multiple Lists" ClickApp. If it fails, do not fail or roll back the ticket — record the outcome for Step 6.
+After a ticket is created successfully, call the connector's `clickup_add_task_to_list` operation with the created task's ID and `result.sprintListId`. This requires the "Tasks in Multiple Lists" ClickApp. If it fails, do not fail or roll back the ticket — record the outcome for Step 6.
 
 ### Attach the shared evidence screenshot, if present
 
@@ -77,7 +81,7 @@ All improvements from this report share one screenshot: `result.evidenceFile`. I
 
 1. Resolve its full path: it is a filename in the same directory as the report itself (`<directory of report-path>/<evidenceFile>`).
 2. Check with `Bash` whether the file exists on disk. If not, skip attachment for all tickets from this run silently — note "no evidence file found" in each ticket's record.
-3. If it exists, for **each** created ticket, call `mcp__claude_ai_ClickUp__clickup_request_attachment_upload` with that ticket's task ID, then follow the returned upload instructions with `curl -f` (or explicit HTTP-status checking — plain `curl` can exit `0` on a 4xx/5xx response) via `Bash`. Record success/failure per ticket; a failure on one ticket's attachment does not stop the batch or affect other tickets.
+3. If it exists, for **each** created ticket, call the connector's `clickup_request_attachment_upload` operation with that ticket's task ID, then follow the returned upload instructions with `curl -f` (or explicit HTTP-status checking — plain `curl` can exit `0` on a 4xx/5xx response) via `Bash`. Record success/failure per ticket; a failure on one ticket's attachment does not stop the batch or affect other tickets.
 
 ## Step 6 — Final summary
 

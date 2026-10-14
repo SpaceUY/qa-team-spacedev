@@ -1,0 +1,219 @@
+---
+name: qa-smoke-test
+description: Focused smoke test of one ClickUp ticket's feature — fetches ticket context fresh from ClickUp, runs a scoped set of checks against that feature, and offers to add/update the tested flow in context/regression-flows.md. Invoke manually with a ticket link or ID.
+user-invocable: true
+allowed-tools: Read, Write, Edit, AskUserQuestion, Bash, ToolSearch
+---
+
+# qa-smoke-test — Focused Smoke Test from a ClickUp Ticket
+
+You run a focused smoke test scoped to one ClickUp ticket's feature —
+not `qa-blackbox`'s full protocol. This is manual, on-demand: only run
+it when the user explicitly invokes `/qa-smoke-test <ticket link or ID>`.
+
+## Step 0 — Pre-flight: verify Playwright MCP
+
+Same check as `qa-blackbox` and `qa-text-check`: confirm
+`mcp__playwright__browser_navigate` is available before doing anything
+else. If not, stop immediately and tell the user, same message pattern
+as `CLAUDE.md`'s Step 0 ("Text QA halted" style, adapted: "**Smoke test
+halted — Playwright MCP is not connected.**").
+
+## Step 0.5 — Scope Selection: Desktop, Mobile, or Both
+
+Ask the user via `AskUserQuestion`, before fetching the ticket or
+touching the browser:
+
+> "What's the scope for this smoke test?"
+> 1. **Desktop only** (1440×900)
+> 2. **Mobile only** (375×667)
+> 3. **Both** (Desktop + Mobile) — recommended default
+
+Never skip this or assume "Both" — ask every time this skill runs.
+Carry the answer forward as `{viewport_scope}` through Steps 2-4: take
+evidence screenshots and check the happy path only at the in-scope
+viewport(s), and state the actual viewport(s) tested in the report
+(Step 4), never claiming coverage of one that wasn't tested.
+
+## Step 1 — Fetch the ticket, fresh, every time
+
+Take the ticket link or ID the user gave when invoking this skill.
+Resolve it to a ClickUp task ID (parse it out of a URL if given as a
+link) and call the connector's **task-fetch** operation (`clickup_get_task`)
+to fetch its current title, description, and acceptance criteria.
+
+**Resolve the connector at run time** (`ToolSearch` for `clickup`) — never
+hardcode a tool name or server id. The connector is registered under an
+opaque server id that varies by session and version, so a name written here
+rots: this file carried `mcp__claude_ai_ClickUp__*` in `allowed-tools` long
+after that id stopped resolving, which silently blocked the fetch this skill
+is built around. If nothing resolves, STOP and say the connector is not live.
+
+**Never cache or persist this ticket content in `context/` or anywhere
+else in this repo.** A ticket's content is a moving target during a
+sprint — always re-fetch it fresh on every invocation, even for the same
+ticket ID re-run minutes apart.
+
+If the ticket can't be found or the ClickUp MCP call fails, tell the
+user the exact error and stop — do not guess at what the feature might
+be from the ticket ID alone.
+
+## Step 2 — Scope the smoke test to the ticket's feature
+
+From the ticket's title/description/acceptance criteria, identify:
+- Which screen(s)/route(s) the feature lives on (ask the user if the
+  ticket doesn't make this obvious — don't guess a URL).
+- What the acceptance criteria say should work.
+
+Optionally read `.env` via `Bash` (same method as `qa-blackbox`: source
+it, never `Read` it or print its contents) for `BASE_URL` and, if the
+ticket's feature is behind a login, `TEST_USER_EMAIL`/`TEST_USER_PASSWORD`
+to log in as the test user — never invent or guess a credential. Sourcing
+is shell evaluation, so every `.env` value must be single-quoted (see
+`.env.example`) — an unquoted value with a space, `$`, backtick, `;`, or
+`&` will be truncated or executed instead of read literally. Also
+check `context/navigation-map.md`'s `## Site Structure` section — this
+skill benefits from all of this but does not require it (a smoke test
+can proceed with a URL and manual login steps the user provides
+directly if `.env` isn't configured yet).
+
+Run a focused set of checks against just this feature: does it match
+each acceptance criterion, does the happy path work, and a light pass on
+obvious validation/error cases directly related to the ticket — not the
+full S1-S12 standard scenario set `qa-blackbox` runs. Take evidence
+screenshots the same way `qa-blackbox` does (one per finding, following
+the same `evidence/{hostname}/{subpath}/{YYYY-MM-DD}/` convention from
+`CLAUDE.md` § "📁 Evidence Structure").
+
+## Step 3 — Report findings
+
+Summarize to the user: which acceptance criteria passed/failed, any bugs
+found (with evidence), and an overall smoke-test verdict (PASS /
+CONDITIONAL PASS / FAIL) — same three-way verdict vocabulary
+`qa-blackbox` uses, for consistency.
+
+## Step 4 — Write the report
+
+Write `evidence/{hostname}/{subpath}/{YYYY-MM-DD}/qa-report.md` — the
+same dated evidence folder Step 2's screenshots were saved into, using
+the same hostname/subpath naming rules as `CLAUDE.md` § "📁 Evidence
+Structure". If the day's folder already exists, add to it rather than
+overwriting.
+
+The report uses the same 4-column Bug Register format as
+`qa-blackbox`'s `qa-report.md` (`ID | Severity | Description |
+Evidence`), so `report-bugs-to-clickup` can parse it without any
+changes:
+
+```markdown
+# QA Report — {Ticket title or feature name}
+
+**Date:** YYYY-MM-DD
+**URL:** {full URL of the screen(s) tested}
+**Viewport(s):** {whichever of 375 × 667 px (Mobile) / 1440 × 900 px (Desktop) `{viewport_scope}` covers}
+
+---
+
+## Executive Summary
+
+**Status:** PASS | CONDITIONAL PASS | FAIL
+{1–3 sentence verdict, matching what you told the user in Step 3.}
+
+---
+
+## Bug Register
+
+| ID | Severity | Description | Evidence |
+|----|----------|-------------|----------|
+| BUG-001 | 🔴 High | ... | 01-*.png |
+
+---
+
+## Recommended Actions
+
+### Must Fix
+- ...
+
+### Nice to Have
+- ...
+
+## Evidence Files
+
+| File | Description |
+|------|-------------|
+| 01-*.png | ... |
+```
+
+The title line must read exactly `# QA Report — {Tested flow}` (em
+dash), matching `report-bugs-to-clickup`'s required header format —
+use the ticket's title (or a short feature name derived from it) as
+`{Tested flow}`.
+
+Always include the `## Recommended Actions` section with its
+`### Must Fix` and `### Nice to Have` subsections, matching
+`qa-blackbox`'s report template's heading structure. Write each item
+under both subsections as a `-` bullet (not a numbered list) with no
+blank markdown divider (`---`) directly between the bullets and the
+next heading — `/report-improvements-to-clickup`'s parser reads
+`### Nice to Have`'s bullets by scanning lines that start with `-` until
+the next heading, and a stray `---` divider line also starts with `-`
+and would be misread as a bogus bullet. If this smoke test surfaced
+nothing worth suggesting as a low-priority improvement, still write the
+subsection with a single bullet stating that, e.g.
+`- None for this run.` — never leave `### Nice to Have` with zero
+bullet items, since the parser requires at least one.
+
+If **no bugs** were found, still write the report: an empty Bug
+Register table (header row only) plus an explicit sentence such as "No
+issues found during this smoke test." — same precedent `qa-text-check`
+follows. Never skip writing the report because there was nothing to
+find.
+
+## Step 5 — End-of-run regression sync (mandatory, every run)
+
+Regardless of the Step 3 verdict, ask the user via `AskUserQuestion`:
+
+> "Should this flow be added to, or update, the project's regression
+> set (`context/regression-flows.md`)?"
+
+with exactly these three options:
+
+1. **Add as a new flow** — this ticket introduced a feature that should
+   now be part of ongoing regression testing.
+2. **Update an existing flow** — this ticket changed a step, a test data
+   value, or a URL for a flow that's already documented there.
+3. **Skip** — this ticket doesn't warrant a regression-flows change.
+
+Never skip asking this, even if the smoke test found no bugs or the
+ticket seems minor — let the user decide, don't decide for them.
+
+- If **Add**: read `context/regression-flows.md`, then append a new
+  `## Flow: {name}` section (ask the user for a short flow name) with
+  `**Steps:**` (derived from what you actually exercised during the
+  smoke test in Step 2), `**Test data:**` (any values you used), and
+  `**Last successful run:** {today's date}` if the smoke test passed, or
+  `**Last successful run:** never run` if it didn't. Use the exact same
+  heading format `qa-project-setup` uses, so `qa-regression` can parse
+  it identically regardless of which skill wrote it.
+- If **Update**: ask the user which existing `## Flow:` entry to update,
+  read its current content, and use `Edit` to change only what the user
+  says changed (a step, a test-data value, a URL) — never rewrite the
+  whole entry from scratch. Also update that entry's
+  `**Last successful run:**` line: set it to today's date if the smoke
+  test passed, or leave it unchanged (do not overwrite a real prior
+  date with `never run`) if the smoke test failed — the same
+  pass/fail rule the **Add** path above uses, applied to an existing
+  entry instead of a new one.
+- If **Skip**: do nothing further to `context/regression-flows.md`.
+
+## Constraints
+
+- Never persist ClickUp ticket content into `context/` — always fetch
+  fresh (Step 1).
+- Never skip the Step 5 regression-sync question.
+- Never fabricate acceptance criteria not actually present on the
+  ticket, and never fabricate a bug not actually observed during the
+  smoke test — the report (Step 4) reflects only what was actually
+  checked.
+- Never write a plaintext credential or secret into `context/` — same
+  rule as `qa-project-setup`.

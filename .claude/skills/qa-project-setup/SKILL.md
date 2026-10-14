@@ -125,6 +125,21 @@ Once done, show the user a short summary of what's now in `.env`
 `context/regression-flows.md` (flow count and names), and tell them
 they're ready to run `qa-blackbox`, `qa-smoke-test`, or `qa-regression`.
 
+## Pre-flight for a browser run
+
+Before the first browser session on a machine, check these known Playwright MCP pitfalls:
+
+- **All `@playwright/mcp` instances share one profile directory.** A stale server still holding
+  it makes `browser_navigate` fail with "Browser is already in use". Check for running
+  `playwright-mcp` processes (`ps aux | grep playwright-mcp`) and kill stale ones before starting.
+- **Login state from an old server can look like an app bug.** If a session fails in a way that
+  looks like authentication, confirm the Playwright MCP server running is the current one, not a
+  leftover from an earlier configuration, before reporting it.
+- **Do not assume every `--caps` value listed in `--help` is validated.** Check the tool list
+  after changing capabilities.
+- **`--secrets <path>` crashes when the file is missing.** Do not point it at a path that does not
+  exist; credentials still stay in `.env` and are never printed.
+
 ## Constraints
 
 - Never write any credential or secret value into `context/` or any

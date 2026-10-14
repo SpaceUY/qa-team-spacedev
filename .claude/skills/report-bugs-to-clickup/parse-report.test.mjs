@@ -7,7 +7,7 @@ test('parseBugRegister extracts rows from a Bug Register table', () => {
 # QA Report — Register Flow
 
 **Date:** 2026-03-26
-**URL:** https://staging.otonomi.ai/register
+**URL:** https://staging.example.com/register
 **Viewports:** 375 × 667 px (Mobile) · 1440 × 900 px (Desktop)
 **Quality Score:** 72/100
 
@@ -97,19 +97,19 @@ test('parseReportHeader extracts flow name, url, and date', () => {
 # QA Report — Register Flow
 
 **Date:** 2026-03-26
-**URL:** https://staging.otonomi.ai/register
+**URL:** https://staging.example.com/register
 **Viewports:** 375 × 667 px (Mobile) · 1440 × 900 px (Desktop)
 `;
   const result = parseReportHeader(md);
   assert.deepEqual(result, {
     flowName: 'Register Flow',
-    url: 'https://staging.otonomi.ai/register',
+    url: 'https://staging.example.com/register',
     date: '2026-03-26',
   });
 });
 
 test('inferPlatform defaults to Web', () => {
-  assert.equal(inferPlatform({ flowName: 'Register Flow' }, 'evidence/staging-otonomi-ai/register/2026-03-26/qa-report.md'), 'Web');
+  assert.equal(inferPlatform({ flowName: 'Register Flow' }, 'evidence/staging-example-com/register/2026-03-26/qa-report.md'), 'Web');
 });
 
 test('inferPlatform detects Mobile from flow name', () => {
@@ -117,7 +117,7 @@ test('inferPlatform detects Mobile from flow name', () => {
 });
 
 test('inferEnvironment detects Staging from hostname', () => {
-  assert.equal(inferEnvironment('https://staging.otonomi.ai/register'), 'Staging');
+  assert.equal(inferEnvironment('https://staging.example.com/register'), 'Staging');
 });
 
 test('inferEnvironment detects Dev from localhost', () => {
@@ -125,7 +125,7 @@ test('inferEnvironment detects Dev from localhost', () => {
 });
 
 test('inferEnvironment defaults to Production for other domains', () => {
-  assert.equal(inferEnvironment('https://otonomi.ai/dashboard'), 'Production');
+  assert.equal(inferEnvironment('https://example.com/dashboard'), 'Production');
 });
 
 test('inferEnvironment does not misclassify a production hostname that merely contains "staging" as a substring', () => {
@@ -148,14 +148,14 @@ test('buildTicketTitle assembles the pipe-separated format', () => {
   const bug = { id: 'BUG-001', severity: 'High', description: 'The user cannot see the image', evidence: '01-home.png' };
   assert.equal(
     buildTicketTitle(bug, 'Web', 'Staging', 'Home'),
-    '[BUG] Web | Staging | Home | The user cannot see the image'
+    '[BUG-001] The user cannot see the image'
   );
 });
 
 test('buildTicketDescription fills the fixed template', () => {
   const bug = { id: 'BUG-001', severity: 'High', description: 'The user cannot see the image', evidence: '01-home.png' };
-  const header = { url: 'https://staging.otonomi.ai/' };
-  const description = buildTicketDescription(bug, header, 'Julia Disarli');
+  const header = { url: 'https://staging.example.com/' };
+  const description = buildTicketDescription(bug, header, 'QA Engineer');
 
   assert.equal(description, [
     'Preconditions:',
@@ -173,9 +173,9 @@ test('buildTicketDescription fills the fixed template', () => {
     'Additional information:',
     'Original ID: BUG-001',
     'Severity: High',
-    'URL: https://staging.otonomi.ai/',
+    'URL: https://staging.example.com/',
     'Evidence: 01-home.png',
-    'Reported by: Julia Disarli',
+    'Reported by: QA Engineer',
   ].join('\n'));
 });
 
@@ -216,7 +216,7 @@ test('buildTickets combines parsing, inference, and building end-to-end', () => 
 # QA Report — Register Flow
 
 **Date:** 2026-03-26
-**URL:** https://staging.otonomi.ai/register
+**URL:** https://staging.example.com/register
 
 ## Bug Register
 | ID | Severity | Description | Evidence |
@@ -226,10 +226,10 @@ test('buildTickets combines parsing, inference, and building end-to-end', () => 
   const sprintLists = [{ id: '9', name: 'Sprint 14', startDate: '2026-08-29', endDate: '2026-09-11' }];
   const result = buildTickets({
     markdownText: md,
-    reportPath: 'evidence/staging-otonomi-ai/register/2026-03-26/qa-report.md',
+    reportPath: 'evidence/staging-example-com/register/2026-03-26/qa-report.md',
     sprintLists,
     today: '2026-09-01',
-    reporterName: 'Julia Disarli',
+    reporterName: 'QA Engineer',
   });
 
   assert.deepEqual(result, {
@@ -237,7 +237,9 @@ test('buildTickets combines parsing, inference, and building end-to-end', () => 
     sprintListName: 'Sprint 14',
     tickets: [
       {
-        title: '[BUG] Web | Staging | Register | Email validation accepts malformed addresses',
+        title: '[BUG-001] Email validation accepts malformed addresses',
+        page: 'Register',
+        platform: 'Web',
         description: [
           'Preconditions:',
           '-',
@@ -254,9 +256,9 @@ test('buildTickets combines parsing, inference, and building end-to-end', () => 
           'Additional information:',
           'Original ID: BUG-001',
           'Severity: High',
-          'URL: https://staging.otonomi.ai/register',
+          'URL: https://staging.example.com/register',
           'Evidence: 02-invalid-email.png',
-          'Reported by: Julia Disarli',
+          'Reported by: QA Engineer',
         ].join('\n'),
         severity: 'High',
         environment: 'Staging',
@@ -273,7 +275,7 @@ test('buildTickets surfaces a parse error without throwing', () => {
     reportPath: 'evidence/x/root/2026-03-26/qa-report.md',
     sprintLists: [],
     today: '2026-09-01',
-    reporterName: 'Julia Disarli',
+    reporterName: 'QA Engineer',
   });
   assert.deepEqual(result, { error: 'No "Bug Register" section found in report.' });
 });
