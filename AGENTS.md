@@ -19,8 +19,6 @@ cp .env.example .env
 - `BASE_URL` — the staging/test environment URL
 - `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` — test account credentials
 - `CLICKUP_API_KEY` — Personal Access Token (from ClickUp settings)
-- `CLICKUP_BUGS_LIST_ID` — numeric ID of the "Bugs" list in ClickUp
-- `CLICKUP_SPRINT_LIST_ID` — numeric ID of the active Sprint list in ClickUp
 
 **Important:** `.env` is gitignored and must never be committed or shared. All values must be single-quoted to protect special characters.
 
@@ -359,11 +357,11 @@ After generating a QA report, you can automatically create bug and improvement t
 **Your `.env` file must include:**
 ```bash
 CLICKUP_API_KEY='pk_...'           # Personal Access Token from ClickUp
-CLICKUP_BUGS_LIST_ID='123456789012' # Numeric ID of your Bugs list
-CLICKUP_SPRINT_LIST_ID='123456789014' # Numeric ID of your Sprint list
 ```
 
-If these are missing, the skills will fail with clear instructions to add them.
+The Bugs List ID and Sprint List ID are not read from `.env`: you give them in chat when you run `/report-bugs-to-clickup`.
+
+If `CLICKUP_API_KEY` is missing, the skills will fail with clear instructions to add it.
 
 ### Creating Bug Tickets
 

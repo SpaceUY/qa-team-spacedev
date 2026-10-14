@@ -79,12 +79,12 @@ To create QA bug and improvement tickets in ClickUp from reports, add:
 - `CLICKUP_API_KEY` — your Personal Access Token from ClickUp
   (generate at `https://app.clickup.com/settings` → API → Generate Token).
   Token format: begins with `pk_`.
-- `CLICKUP_BUGS_LIST_ID` — the ID of your "Bugs" list in ClickUp
-  (find it in the URL when viewing the list: `/l/[LIST_ID]/`).
-- `CLICKUP_SPRINT_LIST_ID` — the ID of your active Sprint list in ClickUp
-  (where created tickets will be associated for sprint tracking).
+The Bugs List ID and Sprint List ID are **not** stored in `.env`. The
+`/report-bugs-to-clickup` skill asks you for them in chat each session
+(the Bugs List ID is remembered for the rest of that conversation; the
+Sprint List ID is asked every run because sprints rotate).
 
-**Finding ClickUp List IDs:**
+**Finding ClickUp List IDs** (for when the skill asks):
 1. Open ClickUp and navigate to your project
 2. Click on the list you want (e.g., "Bugs", "Active Sprint")
 3. Copy the URL from your browser address bar

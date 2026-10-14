@@ -376,5 +376,5 @@ Related: BUG-002 (similar pattern on other wallets)
 ## See Also
 
 - [SKILL.md](SKILL.md) — Technical implementation details
-- [Project QA README](../../README.md) — Full QA testing guide
+- [Project QA README](../../../README.md) — Full QA testing guide
 - ClickUp Workspace: https://app.clickup.com/
