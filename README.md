@@ -201,9 +201,9 @@ file tickets:
 ```
 
 **Workflow:**
-1. Provide your **Bugs List ID** (remembered in chat) → e.g., `901408710081`
-2. Provide current **Sprint List ID** (each run) → e.g., `90142630767`
-3. Select **assignee** (email, username, or "me") → e.g., `julia.disarli`
+1. Provide your **Bugs List ID** (remembered in chat) → e.g., `123456789012`
+2. Provide current **Sprint List ID** (each run) → e.g., `123456789013`
+3. Select **assignee** (email, username, or "me") → e.g., `jane.doe`
 4. Review confirmation table
 5. Tickets created in Bugs List
 6. **Manually add to Sprint** in ClickUp (clear instructions provided)

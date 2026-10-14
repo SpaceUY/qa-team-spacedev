@@ -359,8 +359,8 @@ After generating a QA report, you can automatically create bug and improvement t
 **Your `.env` file must include:**
 ```bash
 CLICKUP_API_KEY='pk_...'           # Personal Access Token from ClickUp
-CLICKUP_BUGS_LIST_ID='901408710081' # Numeric ID of your Bugs list
-CLICKUP_SPRINT_LIST_ID='901419444903' # Numeric ID of your Sprint list
+CLICKUP_BUGS_LIST_ID='123456789012' # Numeric ID of your Bugs list
+CLICKUP_SPRINT_LIST_ID='123456789014' # Numeric ID of your Sprint list
 ```
 
 If these are missing, the skills will fail with clear instructions to add them.

@@ -1,7 +1,7 @@
 # E2E Tests — Playwright Test Suite
 
 Generic, code-based Playwright Test suite. This is the module to use for
-automated regression tests that run in CI, as opposed to `../qa-agent`
+automated regression tests that run in CI, as opposed to the Playwright MCP skills in `.claude/skills/`
 which is for interactive, human-in-the-loop QA sessions.
 
 ---
@@ -52,7 +52,7 @@ one subfolder per project or feature under `tests/`, e.g.:
 ```
 tests/
 ├── example.spec.ts
-├── otonomi/
+├── my-project/
 │   ├── login.spec.ts
 │   └── dashboard.spec.ts
 └── catalyst/

@@ -5,7 +5,7 @@
 ### ✅ Major Updates
 
 #### 1. Bugs List ID Remembered in Chat
-- **Before (v2.0):** Hardcoded per project (`<BUGS_LIST_ID>` for ZENDA)
+- **Before (v2.0):** Hardcoded per project (`<BUGS_LIST_ID>` per project)
 - **Now (v3.0):** User provides Bugs List ID in Step 1 → **remembered for entire conversation**
 - **Benefit:** Supports multi-report sessions where same project's Bugs List is used repeatedly
 - **Example:** First run asks "What is your Bugs List ID?" → next run in same chat: "Using Bugs List <BUGS_LIST_ID> — correct?" (no re-entry needed)
@@ -16,7 +16,7 @@
   - User can select self ("me"), teammate (email/username), or any ClickUp member
   - Resolved via `clickup_resolve_assignees` to get display name and user ID
 - **Benefit:** Single skill works for QA teams where different people report bugs
-- **Example:** "Who should own these tickets?" → "julia.disarli" → Resolved to "QA Engineer" and included in table
+- **Example:** "Who should own these tickets?" → "jane.doe" → Resolved to "QA Engineer" and included in table
 
 #### 3. Updated Workflow Steps
 - **Before:** Step 1 = Sprint List ID → Step 2 = Reporter (QA) resolution → Step 3 = Parse
@@ -50,10 +50,10 @@ Claude: What is the ClickUp ID for your Bugs List?
 You: <BUGS_LIST_ID>
 
 Claude: What is the ClickUp ID for your Sprint List?
-You: 90142630767
+You: 123456789013
 
 Claude: Who should these tickets be assigned to?
-You: julia.disarli
+You: jane.doe
 
 Claude: [Shows confirmation table]
 ```
@@ -64,7 +64,7 @@ Claude: Using Bugs List <BUGS_LIST_ID> from earlier — correct?
 You: yes
 
 Claude: What is the ClickUp ID for your Sprint List?
-You: 90142630767
+You: 123456789013
 
 Claude: Who should these tickets be assigned to?
 You: michael.smith
@@ -91,7 +91,7 @@ Claude: [Shows confirmation table]
 ```
 Precondition:
 - User has multiple wallets connected
-- Environment: https://test.app.zenda.cash/wallets
+- Environment: https://staging.example.com/wallets
 
 Steps to reproduce:
 - Step 01: Navigate to /wallets
@@ -132,7 +132,7 @@ Original ID: BUG-001 | Severity: High | Date: 2026-09-03
 📌 Next Step (Manual):
 1. Open each ticket in ClickUp
 2. Click "Add to List"
-3. Select your Sprint List (90142630767)
+3. Select your Sprint List (123456789013)
 ```
 
 #### 4. Strict Environment Tagging
@@ -264,7 +264,7 @@ If you've been using `report-bugs-to-clickup` v1.0:
 
 Simply run:
 ```bash
-/report-bugs-to-clickup evidence/test-app-zenda-cash/wallets/2026-09-03/qa-report.md
+/report-bugs-to-clickup evidence/staging-example-com/wallets/2026-09-03/qa-report.md
 ```
 
 And follow the new workflow. Sprint association is the only new manual step.

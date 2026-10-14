@@ -5,12 +5,12 @@ Convert QA report bugs into ClickUp tickets with complete template structure, ev
 ## Quick Start
 
 ```bash
-/report-bugs-to-clickup evidence/test-app-zenda-cash/wallets/2026-09-03/qa-report.md
+/report-bugs-to-clickup evidence/staging-example-com/wallets/2026-09-03/qa-report.md
 ```
 
 Then provide:
 1. Your **Bugs List ID** (e.g., `<BUGS_LIST_ID>`) — remembered in this chat for future runs
-2. Your current **Sprint List ID** (e.g., `90142630767`) — asked each time (Sprint rotates every 15 days)
+2. Your current **Sprint List ID** (e.g., `123456789013`) — asked each time (Sprint rotates every 15 days)
 3. Who should **own these tickets** (email, username, or "me")
 
 ---
@@ -85,7 +85,7 @@ Ensure your `qa-report.md` has a **Bug Register** table:
 
 Example:
 ```bash
-/report-bugs-to-clickup evidence/test-app-zenda-cash/wallets/2026-09-03/qa-report.md
+/report-bugs-to-clickup evidence/staging-example-com/wallets/2026-09-03/qa-report.md
 ```
 
 ### Step 3: Provide Bugs List ID
@@ -105,7 +105,7 @@ Claude: Got it! Using Bugs List <BUGS_LIST_ID>. (I'll remember this for the rest
 
 ### Step 4: Provide Sprint List ID
 
-When prompted, enter your current **Sprint List ID** (e.g., `90142630767`).
+When prompted, enter your current **Sprint List ID** (e.g., `123456789013`).
 
 **Where to find it:**
 - Open ClickUp → Your Workspace → Current Sprint → Copy the URL/ID
@@ -114,21 +114,21 @@ When prompted, enter your current **Sprint List ID** (e.g., `90142630767`).
 **Example:**
 ```
 Claude: What is the ClickUp ID for your current Sprint List?
-You: 90142630767
+You: 123456789013
 ```
 
 ### Step 5: Select the Assignee
 
 When prompted, enter who should own these tickets:
-- Email address (e.g., `julia@company.com`)
-- Username (e.g., `julia.disarli`)
+- Email address (e.g., `qa.com`)
+- Username (e.g., `jane.doe`)
 - Or "me" to assign to yourself
 
 **Example:**
 ```
 Claude: Who should these tickets be assigned to?
-You: julia.disarli
-Claude: Resolved to QA Engineer (julia.disarli@company.com)
+You: jane.doe
+Claude: Resolved to QA Engineer (qa.com)
 ```
 
 ### Step 6: Review & Confirm
@@ -137,7 +137,7 @@ The skill shows a confirmation table:
 
 | Title | Severity | Bugs List | Sprint List | Tag | Assignee |
 |-------|----------|-----------|-------------|-----|----------|
-| [BUG] [Staging] Wallets - "coinbase BTC"... | High | <BUGS_LIST_ID> | 90142630767 | staging | QA Engineer |
+| [BUG] [Staging] Wallets - "coinbase BTC"... | High | <BUGS_LIST_ID> | 123456789013 | staging | QA Engineer |
 
 **Confirm** to proceed with ticket creation.
 
@@ -165,7 +165,7 @@ Each ticket is created with:
 
 1. Open ticket in ClickUp (e.g., https://app.clickup.com/t/86bbvvhqq)
 2. Click **"Add to List"** in the right panel
-3. Select your **Sprint List** (`90142630767`)
+3. Select your **Sprint List** (`123456789013`)
 4. Repeat for each ticket
 
 **Why manual?** The "Tasks in Multiple Lists" ClickApp may not be enabled on your workspace — this way you have full control.
@@ -179,7 +179,7 @@ Each ticket is created with:
 ```markdown
 # QA Report — Wallets
 
-**URL:** https://test.app.zenda.cash/wallets
+**URL:** https://staging.example.com/wallets
 **Date:** 2026-09-03
 
 ## Bug Register
@@ -193,7 +193,7 @@ Each ticket is created with:
 ### Command
 
 ```bash
-/report-bugs-to-clickup evidence/test-app-zenda-cash/wallets/2026-09-03/qa-report.md
+/report-bugs-to-clickup evidence/staging-example-com/wallets/2026-09-03/qa-report.md
 ```
 
 ### Output: Two ClickUp Tickets Created
@@ -203,11 +203,11 @@ Each ticket is created with:
 Title: [BUG] [Staging] Wallets - "coinbase BTC" wallet balance stuck indefinitely on "Cargando balance..."
 
 Precondition:
-- User has multiple wallets connected in Zenda, including external wallets (Coinbase BTC, Phantom Sepolia, Coinbase Wallet)
-- Test environment: https://test.app.zenda.cash/wallets
+- User has multiple wallets connected in the app, including external wallets (Coinbase BTC, Phantom Sepolia, Coinbase Wallet)
+- Test environment: https://staging.example.com/wallets
 
 Steps to reproduce:
-- Step 01: Navigate to https://test.app.zenda.cash/wallets
+- Step 01: Navigate to https://staging.example.com/wallets
 - Step 02: Observe the wallet balance list displaying connected wallets
 - Step 03: Wait for balance data to load for all wallets
 - Step 04: Notice that "coinbase BTC" wallet balance gets stuck on "Cargando balance..."
@@ -238,12 +238,12 @@ Attachment: 01-desktop-wallets.png ✅
 📌 Add to Sprint (Manual):
 
 Ticket IDs created: 86bbvvhqq, 86bbvvhrx
-Sprint List ID: 90142630767
+Sprint List ID: 123456789013
 
 To associate tickets to the sprint:
 1. Open each ticket in ClickUp
 2. Click "Add to List" in the right panel
-3. Select Sprint List (90142630767)
+3. Select Sprint List (123456789013)
 ```
 
 ---
@@ -283,8 +283,8 @@ List the initial state needed to reproduce the bug:
 **Example:**
 ```
 Precondition:
-- User has multiple wallets connected in Zenda (Tron, Polygon, external)
-- Test environment: https://test.app.zenda.cash
+- User has multiple wallets connected in the app (Tron, Polygon, external)
+- Test environment: https://staging.example.com
 - External wallet "Coinbase BTC" is in the wallet list
 ```
 
@@ -297,7 +297,7 @@ Numbered, actionable steps in the exact order to trigger the bug:
 **Example:**
 ```
 Steps to reproduce:
-- Step 01: Navigate to https://test.app.zenda.cash/wallets
+- Step 01: Navigate to https://staging.example.com/wallets
 - Step 02: Observe wallet list on page load
 - Step 03: Wait 5+ seconds for balances to load
 - Step 04: Notice "Cargando balance..." never resolves for "coinbase BTC"
@@ -376,5 +376,5 @@ Related: BUG-002 (similar pattern on other wallets)
 ## See Also
 
 - [SKILL.md](SKILL.md) — Technical implementation details
-- [Zenda QA README](../../README.md) — Full QA testing guide
+- [Project QA README](../../README.md) — Full QA testing guide
 - ClickUp Workspace: https://app.clickup.com/

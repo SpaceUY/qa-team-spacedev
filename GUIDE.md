@@ -87,7 +87,7 @@ To create QA bug and improvement tickets in ClickUp from reports, add:
 2. Click on the list you want (e.g., "Bugs", "Active Sprint")
 3. Copy the URL from your browser address bar
 4. Extract the list ID from the path: `https://app.clickup.com/[WORKSPACE]/v/l/[LIST_ID]/...`
-5. Use only the numeric part (e.g., `901408710081`, not `6-901408710081-1`)
+5. Use only the numeric part (e.g., `123456789012`, not `6-123456789012-1`)
 
 **Important Quoting Rules:**
 

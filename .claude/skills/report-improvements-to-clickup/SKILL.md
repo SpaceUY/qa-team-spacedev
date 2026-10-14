@@ -21,7 +21,7 @@ The user's argument is the path to a `qa-report.md`. If no path was given, ask f
 
 Ask the user two things:
 
-1. **The project's fixed Improvements List** (e.g. "Otonomi Improvements") — every ticket created by this skill goes here, regardless of sprint. Use the connector's `clickup_get_list` operation to resolve its ID from the name; if ambiguous, use the connector's `clickup_get_workspace_hierarchy` operation to show the tree and let them pick. This becomes `destinationListId`.
+1. **The project's fixed Improvements List** (e.g. "Project Improvements") — every ticket created by this skill goes here, regardless of sprint. Use the connector's `clickup_get_list` operation to resolve its ID from the name; if ambiguous, use the connector's `clickup_get_workspace_hierarchy` operation to show the tree and let them pick. This becomes `destinationListId`.
 2. **The project's Sprints Folder** — call the connector's `clickup_get_workspace_hierarchy` operation with `max_depth: "2"`, locate the Folder, and collect every List inside it as `{id, name, startDate, endDate}` (converting millisecond timestamps to `YYYY-MM-DD`).
 
 ## Step 2 — Identify the reporting QA
@@ -92,4 +92,4 @@ Print a table: for every ticket, the created ClickUp task URL or failure reason,
 - Never fabricate the "In Scope" text — it is always the "Nice to Have" bullet's own wording, unchanged.
 - Never skip Step 4's confirmation, even if the user seems in a hurry.
 - Every "Nice to Have" bullet gets a ticket — do not filter or prioritize which ones to create.
-- If the ClickUp MCP tools are not available in this session, stop immediately and tell the user, the same way `qa-agent`'s Playwright MCP pre-flight check does — do not attempt a workaround.
+- If the ClickUp MCP tools are not available in this session, stop immediately and tell the user, the same way the Playwright MCP pre-flight check in CLAUDE.md does — do not attempt a workaround.
