@@ -19,8 +19,8 @@ cp .env.example .env
 - `BASE_URL` — the staging/test environment URL
 - `TEST_USER_EMAIL` / `TEST_USER_PASSWORD` — test account credentials
 - `CLICKUP_API_KEY` — Personal Access Token (from ClickUp settings)
-- `CLICKUP_BUGS_LIST_ID` — numeric ID of the "Bugs" list in ClickUp
-- `CLICKUP_SPRINT_LIST_ID` — numeric ID of the active Sprint list in ClickUp
+
+The Bugs List ID and the Sprint List ID are not read from `.env`: you give them in chat when you run `/report-bugs-to-clickup`.
 
 **Important:** `.env` is gitignored and must never be committed or shared. All values must be single-quoted to protect special characters.
 
@@ -286,6 +286,13 @@ If the same flow is tested more than once on the same day, screenshots are numbe
 | `qa-smoke-test` | Focused smoke test scoped to one ClickUp ticket's feature | **Manual only** — invoke explicitly with `/qa-smoke-test <ticket>` |
 | `qa-regression` | End-to-end execution of every documented core regression flow | **Manual only** — invoke explicitly with `/qa-regression` |
 | Playwright MCP (`mcp__playwright__*`) | Navigation, interaction, screenshots, DOM inspection | Required for all of the above |
+| `qa-report-test-execution` | Renders a `qa-report.md` into a self-contained HTML report | **Manual only** — `/qa-report-test-execution <path/to/qa-report.md>` |
+| `qa-report-render` | Shared rendering rules used by the HTML report skill | Invoked by `qa-report-test-execution` |
+| `qa-evidence-discipline` | Rules for what counts as evidence and how it is recorded | Composed by the QA skills |
+| `qa-platform-discovery` | Maps which platforms, viewports and roles a site exposes before testing | **Manual only** — `/qa-platform-discovery` |
+| `qa-app-regression` | Scoped UI regression across a whole app, flow by flow | **Manual only** — `/qa-app-regression` |
+| `qa-api-regression` | Sweep of an HTTP API surface, when asked for by name | **Manual only** — `/qa-api-regression` |
+| `qa-ad-hoc` | One-off checks of a named endpoint or flow | **Manual only** — `/qa-ad-hoc` |
 
 > **Required:** Playwright MCP must be connected before any QA session starts. See Step 0 above.
 > **Note:** `qa-text-check` is never triggered automatically by the URL+flow auto-activation described above — it only runs when the user explicitly types `/qa-text-check`.
@@ -359,8 +366,6 @@ After generating a QA report, you can automatically create bug and improvement t
 **Your `.env` file must include:**
 ```bash
 CLICKUP_API_KEY='pk_...'           # Personal Access Token from ClickUp
-CLICKUP_BUGS_LIST_ID='901408710081' # Numeric ID of your Bugs list
-CLICKUP_SPRINT_LIST_ID='901419444903' # Numeric ID of your Sprint list
 ```
 
 If these are missing, the skills will fail with clear instructions to add them.

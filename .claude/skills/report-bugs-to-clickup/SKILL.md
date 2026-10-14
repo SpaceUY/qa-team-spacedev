@@ -2,12 +2,16 @@
 name: report-bugs-to-clickup
 description: Reads a qa-report.md's Bug Register table and creates one ClickUp bug ticket per row in your project's Bugs List. Asks for Bugs List ID (remembered in chat), Sprint List ID (each run), and assignee (manual selection). Completes full template structure (Precondition, Steps to reproduce, Actual result, Expected result, Additional information), attaches evidence screenshots, tags by environment. Sprint association is manual (post-creation). Invoke with `/report-bugs-to-clickup <report-path>`.
 user-invocable: true
-allowed-tools: Bash, Read, AskUserQuestion, mcp__claude_ai_ClickUp__clickup_get_workspace_hierarchy, mcp__claude_ai_ClickUp__clickup_get_list, mcp__claude_ai_ClickUp__clickup_create_task, mcp__claude_ai_ClickUp__clickup_add_task_to_list, mcp__claude_ai_ClickUp__clickup_resolve_assignees, mcp__claude_ai_ClickUp__clickup_request_attachment_upload
+allowed-tools: Bash, Read, AskUserQuestion, ToolSearch
 ---
 
 # report-bugs-to-clickup — Create ClickUp bug tickets from a QA report
 
 You turn a `qa-report.md`'s **Bug Register** table into ClickUp bug tickets, one ticket per row, created in the project's fixed Bugs List and associated to the active sprint list. This is a manual, on-demand skill — only run it when the user explicitly invokes `/report-bugs-to-clickup <path>`.
+
+## Prerequisite — resolve the ClickUp connector at run time
+
+The ClickUp MCP connector must be live. Discover its operations when this skill runs (`ToolSearch` for `clickup`), and never hardcode a tool name or server id: the connector is registered under an id that changes between sessions, so a name written into this file goes stale and silently blocks the calls this skill exists to make. If nothing resolves, STOP and say the connector is not live.
 
 ## Step 0 — Resolve the report path
 
@@ -30,7 +34,7 @@ Ask the user for **both** IDs:
 ## Step 1.5 — Ask who should be assigned to tickets
 
 - **Question:** "Who should these tickets be assigned to? Provide their email, username, or say 'me' for yourself."
-- **Resolution:** Call `mcp__claude_ai_ClickUp__clickup_resolve_assignees` with the provided name/email to get their user ID and display name.
+- **Resolution:** Call the connector's `clickup_resolve_assignees` operation with the provided name/email to get their user ID and display name.
 - **Result:** Store both `assigneeId` (for task creation) and `assigneeDisplayName` (for description/table).
 
 ## Step 2 — Build the tickets
@@ -74,9 +78,9 @@ Ask the user to confirm (`AskUserQuestion`, yes/no or "edit"). If they ask for c
 
 ## Step 4 — Create the tickets
 
-For each confirmed ticket, call `mcp__claude_ai_ClickUp__clickup_create_task`:
+For each confirmed ticket, call the connector's `clickup_create_task` operation:
 
-- `name`: the ticket's `title` (format: `[BUG] [Environment] Area - Brief description`)
+- `name`: the ticket's `title` (format: `[BUG-NNN] Brief description` (built by `parse-report.mjs`'s `buildTicketTitle`))
 - `list_id`: the `bugsListId` from Step 1 (user-provided, project-specific)
 - `markdown_description`: the ticket's `description` (must fill the default template structure completely)
 - `assignees`: `[<assigneeId from Step 1.5>]`
@@ -123,7 +127,7 @@ After all tickets are successfully created in the Bugs List:
    - "1. Opening each ticket in ClickUp"
    - "2. Clicking 'Add to List' in the right panel"
    - "3. Selecting the Sprint List from the dropdown"
-3. **Do not** attempt `mcp__claude_ai_ClickUp__clickup_add_task_to_list` calls — this step is intentionally manual because "Tasks in Multiple Lists" ClickApp may not be enabled on all workspaces.
+3. **Do not** attempt the connector's `clickup_add_task_to_list` operation calls — this step is intentionally manual because "Tasks in Multiple Lists" ClickApp may not be enabled on all workspaces.
 
 ### Attach the evidence screenshot, if present
 
@@ -132,7 +136,7 @@ After a ticket is created successfully, try to attach its evidence screenshot:
 1. Resolve the full path to the evidence file: the ticket's `evidence` value (from the parser's output, e.g. `02-invalid-email.png`) is a filename relative to the report's own directory. For example, if the report is at `evidence/x/register/2026-03-26/qa-report.md` and `evidence` is `02-invalid-email.png`, the full path is `evidence/x/register/2026-03-26/02-invalid-email.png`.
 2. Check with `Bash` (or `Read`) whether that file exists on disk.
    - If it does **not** exist, skip attachment for this ticket silently — this is not a batch-aborting failure. Note "no evidence file found" against this ticket's record so Step 6 can mention it.
-   - If it **does** exist, call `mcp__claude_ai_ClickUp__clickup_request_attachment_upload` with the created task's ID. Follow the returned upload instructions (URL, method, multipart field name) to upload the file with a native HTTP client via `Bash` (e.g. `curl`). Use `curl -f` (which fails, and returns a non-zero exit code, on an HTTP error response) or explicitly check the HTTP status code returned, rather than relying only on curl's plain exit code — a plain `curl` call can exit `0` even on a 4xx/5xx response, which would make a failed upload look like a success.
+   - If it **does** exist, call the connector's `clickup_request_attachment_upload` operation with the created task's ID. Follow the returned upload instructions (URL, method, multipart field name) to upload the file with a native HTTP client via `Bash` (e.g. `curl`). Use `curl -f` (which fails, and returns a non-zero exit code, on an HTTP error response) or explicitly check the HTTP status code returned, rather than relying only on curl's plain exit code — a plain `curl` call can exit `0` even on a 4xx/5xx response, which would make a failed upload look like a success.
 3. If the upload request or the follow-up HTTP upload fails, record the failure with the ticket's title (do not stop the batch) and note "evidence upload failed" against this ticket's record.
 
 ## Step 5 — Final summary
@@ -170,7 +174,7 @@ Bugs List ID (for next run): {bugsListId}
 - **Template Structure is Mandatory:** Every ticket description **must** complete the full default template (Precondition, Steps to reproduce, Actual result, Expected result, Additional information). Do not skip sections or leave them empty — fill all fields with data from the QA report.
 - **Image References:** Include markdown image syntax `![filename.png](filename.png)` in the "Additional information" section for each evidence file. Attach the actual file as a ClickUp attachment in parallel.
 - **Environment Tags:** Use the report's environment field (lowercase) as the tag: `staging`, `production`, `dev`. Never create custom tags not matching the report.
-- **Sprint Association is Manual:** Do not attempt automated sprint association via `mcp__claude_ai_ClickUp__clickup_add_task_to_list`. Inform the user to manually add tickets to the Sprint List after creation (Step 5).
+- **Sprint Association is Manual:** Do not attempt automated sprint association via the connector's `clickup_add_task_to_list` operation. Inform the user to manually add tickets to the Sprint List after creation (Step 5).
 - Never fabricate content — only fill template sections with data explicitly stated in the QA report.
 - Never skip Step 3's confirmation, even if the user seems in a hurry.
 - All severities (High, Medium, Low) get tickets — do not filter by severity.

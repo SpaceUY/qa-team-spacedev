@@ -10,13 +10,13 @@ test('parseReportHeader extracts flow name, url, and date', () => {
 # QA Report — Register Flow
 
 **Date:** 2026-03-26
-**URL:** https://staging.otonomi.ai/register
+**URL:** https://staging.example.com/register
 **Viewports:** 375 × 667 px (Mobile) · 1440 × 900 px (Desktop)
 `;
   const result = parseReportHeader(md);
   assert.deepEqual(result, {
     flowName: 'Register Flow',
-    url: 'https://staging.otonomi.ai/register',
+    url: 'https://staging.example.com/register',
     date: '2026-03-26',
   });
 });
@@ -28,7 +28,7 @@ test('parseReportHeader returns an error when header fields are missing', () => 
 });
 
 test('inferPlatform defaults to Web', () => {
-  assert.equal(inferPlatform({ flowName: 'Register Flow' }, 'evidence/staging-otonomi-ai/register/2026-03-26/qa-report.md'), 'Web');
+  assert.equal(inferPlatform({ flowName: 'Register Flow' }, 'evidence/staging-example-com/register/2026-03-26/qa-report.md'), 'Web');
 });
 
 test('inferPlatform detects Mobile from flow name', () => {
@@ -36,7 +36,7 @@ test('inferPlatform detects Mobile from flow name', () => {
 });
 
 test('inferEnvironment detects Staging from hostname', () => {
-  assert.equal(inferEnvironment('https://staging.otonomi.ai/register'), 'Staging');
+  assert.equal(inferEnvironment('https://staging.example.com/register'), 'Staging');
 });
 
 test('inferEnvironment does not misclassify a production hostname that merely contains "staging" as a substring', () => {
@@ -48,7 +48,7 @@ test('inferEnvironment detects Dev from localhost', () => {
 });
 
 test('inferEnvironment defaults to Production for other domains', () => {
-  assert.equal(inferEnvironment('https://otonomi.ai/dashboard'), 'Production');
+  assert.equal(inferEnvironment('https://example.com/dashboard'), 'Production');
 });
 
 test('inferPage maps the root subpath to Home', () => {
@@ -168,14 +168,14 @@ test('buildImprovementTitle assembles the pipe-separated [Improvement] format', 
 
 test('buildImprovementDescription fills the fixed In Scope template', () => {
   const improvement = { description: 'Add eye icon on login, password field' };
-  const description = buildImprovementDescription(improvement, 'Julia Disarli', 'Low', 'Low');
+  const description = buildImprovementDescription(improvement, 'QA Engineer', 'Low', 'Low');
 
   assert.equal(description, [
     'In Scope:',
     'Add eye icon on login, password field',
     '',
     'Additional information:',
-    'Reported by: Julia Disarli',
+    'Reported by: QA Engineer',
     'Priority: Low',
     'Severity: Low',
   ].join('\n'));
@@ -218,7 +218,7 @@ test('buildImprovementTickets combines parsing, inference, and building end-to-e
 # QA Report — Register Flow
 
 **Date:** 2026-03-26
-**URL:** https://staging.otonomi.ai/register
+**URL:** https://staging.example.com/register
 
 ## Recommended Actions
 ### Nice to Have
@@ -227,10 +227,10 @@ test('buildImprovementTickets combines parsing, inference, and building end-to-e
   const sprintLists = [{ id: '9', name: 'Sprint 14', startDate: '2026-08-29', endDate: '2026-09-11' }];
   const result = buildImprovementTickets({
     markdownText: md,
-    reportPath: 'evidence/staging-otonomi-ai/register/2026-03-26/qa-report.md',
+    reportPath: 'evidence/staging-example-com/register/2026-03-26/qa-report.md',
     sprintLists,
     today: '2026-09-01',
-    reporterName: 'Julia Disarli',
+    reporterName: 'QA Engineer',
     priority: 'Low',
     severity: 'Low',
     evidenceFile: '01-initial-load.png',
@@ -249,7 +249,7 @@ test('buildImprovementTickets combines parsing, inference, and building end-to-e
           'Add eye icon on login, password field',
           '',
           'Additional information:',
-          'Reported by: Julia Disarli',
+          'Reported by: QA Engineer',
           'Priority: Low',
           'Severity: Low',
         ].join('\n'),
@@ -264,7 +264,7 @@ test('buildImprovementTickets surfaces a parse error without throwing', () => {
     reportPath: 'evidence/x/root/2026-03-26/qa-report.md',
     sprintLists: [],
     today: '2026-09-01',
-    reporterName: 'Julia Disarli',
+    reporterName: 'QA Engineer',
     priority: 'Low',
     severity: 'Low',
     evidenceFile: null,

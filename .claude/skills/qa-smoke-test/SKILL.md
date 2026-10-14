@@ -2,7 +2,7 @@
 name: qa-smoke-test
 description: Focused smoke test of one ClickUp ticket's feature — fetches ticket context fresh from ClickUp, runs a scoped set of checks against that feature, and offers to add/update the tested flow in context/regression-flows.md. Invoke manually with a ticket link or ID.
 user-invocable: true
-allowed-tools: Read, Write, Edit, AskUserQuestion, Bash, mcp__claude_ai_ClickUp__clickup_get_task, mcp__claude_ai_ClickUp__clickup_search
+allowed-tools: Read, Write, Edit, AskUserQuestion, Bash, ToolSearch
 ---
 
 # qa-smoke-test — Focused Smoke Test from a ClickUp Ticket
@@ -39,8 +39,15 @@ viewport(s), and state the actual viewport(s) tested in the report
 
 Take the ticket link or ID the user gave when invoking this skill.
 Resolve it to a ClickUp task ID (parse it out of a URL if given as a
-link) and call `mcp__claude_ai_ClickUp__clickup_get_task` to fetch its
-current title, description, and acceptance criteria.
+link) and call the connector's **task-fetch** operation (`clickup_get_task`)
+to fetch its current title, description, and acceptance criteria.
+
+**Resolve the connector at run time** (`ToolSearch` for `clickup`) — never
+hardcode a tool name or server id. The connector is registered under an
+opaque server id that varies by session and version, so a name written here
+rots: this file carried `mcp__claude_ai_ClickUp__*` in `allowed-tools` long
+after that id stopped resolving, which silently blocked the fetch this skill
+is built around. If nothing resolves, STOP and say the connector is not live.
 
 **Never cache or persist this ticket content in `context/` or anywhere
 else in this repo.** A ticket's content is a moving target during a
