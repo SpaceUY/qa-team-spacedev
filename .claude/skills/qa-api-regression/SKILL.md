@@ -22,7 +22,7 @@ allowed-tools: Read, Write
 
 Black-box testing of the API over HTTP. No browser, no source assumptions.
 
-**This is exploratory testing, not a suite runner.** If the repo has a scripted API suite (under `e2e-tests/`), running it is the job of `/qa-regression`. This skill covers what a scripted suite usually does not: invalid payloads, boundaries, authentication failures, error paths, and the accounts and paths no suite reaches.
+**This is exploratory testing, not a suite runner.** If the repo has a scripted API suite (under `e2e-tests/`), running it is the job of the `qa-e2e-runner` agent. This skill covers what a scripted suite usually does not: invalid payloads, boundaries, authentication failures, error paths, and the accounts and paths no suite reaches.
 
 **A green scripted suite is not evidence that a path works.** A case can pass by avoiding the failing path, for example by hardcoding a valid value. Passing means it avoided the path, not that the path is sound.
 

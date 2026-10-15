@@ -2,7 +2,7 @@
 
 Scoped API checks: one endpoint or behaviour, as one named account, nothing more.
 
-**Use it when** you want to check a single route ("does this endpoint reject a missing field") rather than sweep the whole API (`qa-api-regression`) or run the scripted suite (`/qa-regression`).
+**Use it when** you want to check a single route ("does this endpoint reject a missing field") rather than sweep the whole API (`qa-api-regression`) or run the scripted suite (the `qa-e2e-runner` agent).
 
 **Before you start**
 

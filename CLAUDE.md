@@ -53,7 +53,7 @@ When the user provides **a URL and a flow to test** (e.g. "navigate to http://�
 > The Playwright MCP server (`mcp__playwright__*`) is required for all QA sessions and is not available in this session.
 >
 > To fix this:
-> 1. Verify that `.claude/settings.local.json` contains the `mcpServers.playwright` entry.
+> 1. Verify that `.mcp.json` at the repo root contains the `mcpServers.playwright` entry, and that you approved it (`claude mcp list` shows it as connected, not "Pending approval").
 > 2. Run `/mcp` in Claude Code to reconnect MCP servers.
 > 3. If the problem persists, restart the Claude Code session.
 >
@@ -286,8 +286,8 @@ If the same flow is tested more than once on the same day, screenshots are numbe
 | `qa-smoke-test` | Focused smoke test scoped to one ClickUp ticket's feature | **Manual only** — invoke explicitly with `/qa-smoke-test <ticket>` |
 | `qa-regression` | End-to-end execution of every documented core regression flow | **Manual only** — invoke explicitly with `/qa-regression` |
 | Playwright MCP (`mcp__playwright__*`) | Navigation, interaction, screenshots, DOM inspection | Required for all of the above |
-| `qa-report-test-execution` | Renders a `qa-report.md` into a self-contained HTML report | **Manual only** — `/qa-report-test-execution <path/to/qa-report.md>` |
-| `qa-report-render` | Shared rendering rules used by the HTML report skill | Invoked by `qa-report-test-execution` |
+| `qa-report-test-execution` | Writes `qa-report.md` from a run's raw results, then hands off to `qa-report-render` | Internal — invoked by the QA test skills and agents |
+| `qa-report-render` | Renders a `qa-report.md` into a self-contained HTML report | Invoked by `qa-report-test-execution`; also manual — `/qa-report-render <path/to/qa-report.md>` |
 | `qa-evidence-discipline` | Rules for what counts as evidence and how it is recorded | Composed by the QA skills |
 | `qa-platform-discovery` | Maps which platforms, viewports and roles a site exposes before testing | **Manual only** — `/qa-platform-discovery` |
 | `qa-app-regression` | Scoped UI regression across a whole app, flow by flow | **Manual only** — `/qa-app-regression` |
@@ -379,10 +379,11 @@ If these are missing, the skills will fail with clear instructions to add them.
 This skill:
 1. Parses the report's **Bug Register** table
 2. Creates one ClickUp ticket per bug row in your fixed "Bugs" list
-3. Associates each ticket with the active Sprint
-4. Sets status to **OPEN**
-5. Attaches evidence screenshots to each ticket
-6. Tags by environment (`staging`, `production`, etc.)
+3. Leaves each ticket in the Bugs list's default status (no status is set)
+4. Attaches evidence screenshots to each ticket
+5. Tags by environment (`staging`, `production`, etc.)
+
+Sprint association is **manual**: the skill does not add bug tickets to the Sprint List. Its final summary tells you which tickets to add.
 
 **Language:** Tickets are created in the language of the report (English or Spanish). See Step 0.4 above.
 
@@ -392,7 +393,7 @@ This skill:
 /report-improvements-to-clickup path/to/qa-report.md
 ```
 
-Same as above, but creates tickets from the report's **"Nice to Have"** recommendations section, in the project's fixed "Improvements" list (if separate).
+Same as above, but creates tickets from the report's **"Nice to Have"** recommendations section, in the project's fixed "Improvements" list (if separate). Unlike the bug skill, it does add each ticket to the active Sprint List automatically (this needs the "Tasks in Multiple Lists" ClickApp).
 
 ### Before Creating Tickets
 

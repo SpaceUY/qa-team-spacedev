@@ -318,5 +318,5 @@ Overall:                                   76/100 → CONDITIONAL PASS
 - Every bug gets a screenshot at the moment of discovery — no after-the-fact captures
 - Diagnose with `browser_snapshot` before reporting a selector failure as a real bug
 - False positives must be documented as "FP corrected" in the report
-- Console errors must be classified: are they app errors or third-party (e.g. TradingView)?
+- Console errors must be classified: are they app errors or third-party (an embedded widget, analytics or chat script)?
 - Do not report a PASS on any scenario without a screenshot or snapshot as evidence

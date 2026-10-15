@@ -27,7 +27,9 @@ new project:
 4. Install prerequisites and set up the Playwright MCP — see
    `README.md`'s Quickstart section for the exact commands
    (`npx playwright install chromium`, copying
-   `.claude/settings.local.json.example`).
+   `.claude/settings.local.json.example`). The Playwright MCP server itself
+   is defined in the committed `.mcp.json`; the settings file only
+   pre-approves it.
 
 ## 2. Map your project's context
 

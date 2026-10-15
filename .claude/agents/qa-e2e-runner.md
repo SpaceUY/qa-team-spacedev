@@ -1,5 +1,5 @@
 ---
-name: qa-regression
+name: qa-e2e-runner
 description: Runs the repo's scripted Playwright Test suite (e2e-tests/) against a base URL the user provides, interprets pass/fail per test, and reports what passed, what failed and why. Use for "run the e2e regression suite", "run spec X against staging", or "run all tests in e2e-tests". Does not write or edit tests. For the flow-by-flow Playwright MCP pass over context/regression-flows.md, use the /qa-regression skill instead.
 tools: Read, Write, Bash, Glob, Grep, AskUserQuestion, ToolSearch
 ---

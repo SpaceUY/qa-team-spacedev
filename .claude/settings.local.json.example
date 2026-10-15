@@ -3,35 +3,13 @@
     "allow": [
       "Bash(npx playwright:*)",
       "Bash(curl:*)",
-      "Bash(python3:*)",
       "Bash(claude plugin:*)",
-      "Bash(echo:*)",
-      "Skill(qa-blackbox)",
       "Bash(ls:*)",
-      "mcp__playwright__browser_resize",
-      "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_take_screenshot",
-      "mcp__playwright__browser_click",
-      "mcp__playwright__browser_type",
-      "mcp__playwright__browser_wait_for",
-      "mcp__playwright__browser_snapshot",
-      "mcp__playwright__browser_evaluate",
-      "mcp__playwright__browser_console_messages",
-      "mcp__playwright__browser_press_key"
-    ],
-    "allowedTools": [
-      "mcp__playwright__*",
-      "frontend-design",
-      "verification-before-completion"
+      "Skill(qa-blackbox)",
+      "mcp__playwright"
     ]
   },
-  "mcpServers": {
-    "playwright": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@playwright/mcp@latest"
-      ]
-    }
-  }
+  "enabledMcpjsonServers": [
+    "playwright"
+  ]
 }

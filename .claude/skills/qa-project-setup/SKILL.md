@@ -131,7 +131,9 @@ Before the first browser session on a machine, check these known Playwright MCP 
 
 - **All `@playwright/mcp` instances share one profile directory.** A stale server still holding
   it makes `browser_navigate` fail with "Browser is already in use". Check for running
-  `playwright-mcp` processes (`ps aux | grep playwright-mcp`) and kill stale ones before starting.
+  `playwright-mcp` processes and kill stale ones before starting: `ps aux | grep playwright-mcp`
+  on macOS/Linux; on Windows, `Get-CimInstance Win32_Process | Where-Object CommandLine -like '*playwright*mcp*'`
+  in PowerShell.
 - **Login state from an old server can look like an app bug.** If a session fails in a way that
   looks like authentication, confirm the Playwright MCP server running is the current one, not a
   leftover from an earlier configuration, before reporting it.

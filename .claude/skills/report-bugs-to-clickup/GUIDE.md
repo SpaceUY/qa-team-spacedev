@@ -252,7 +252,7 @@ To associate tickets to the sprint:
 
 ### "ClickUp MCP is not connected"
 - Run `/mcp` in Claude Code to reconnect
-- Verify `.claude/settings.local.json` has ClickUp configured
+- Verify the ClickUp connector is connected to your claude.ai account (it is a claude.ai connector, not a server in `.mcp.json`)
 - Restart Claude Code if needed
 
 ### "Ticket creation failed"
