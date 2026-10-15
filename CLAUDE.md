@@ -379,10 +379,11 @@ If these are missing, the skills will fail with clear instructions to add them.
 This skill:
 1. Parses the report's **Bug Register** table
 2. Creates one ClickUp ticket per bug row in your fixed "Bugs" list
-3. Associates each ticket with the active Sprint
-4. Sets status to **OPEN**
-5. Attaches evidence screenshots to each ticket
-6. Tags by environment (`staging`, `production`, etc.)
+3. Leaves each ticket in the Bugs list's default status (no status is set)
+4. Attaches evidence screenshots to each ticket
+5. Tags by environment (`staging`, `production`, etc.)
+
+Sprint association is **manual**: the skill does not add bug tickets to the Sprint List. Its final summary tells you which tickets to add.
 
 **Language:** Tickets are created in the language of the report (English or Spanish). See Step 0.4 above.
 
@@ -392,7 +393,7 @@ This skill:
 /report-improvements-to-clickup path/to/qa-report.md
 ```
 
-Same as above, but creates tickets from the report's **"Nice to Have"** recommendations section, in the project's fixed "Improvements" list (if separate).
+Same as above, but creates tickets from the report's **"Nice to Have"** recommendations section, in the project's fixed "Improvements" list (if separate). Unlike the bug skill, it does add each ticket to the active Sprint List automatically (this needs the "Tasks in Multiple Lists" ClickApp).
 
 ### Before Creating Tickets
 
