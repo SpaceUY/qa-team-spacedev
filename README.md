@@ -252,14 +252,12 @@ qa-team/
 │   │   └── report-improvements-to-clickup/
 │   ├── settings.local.json.example    # copy to settings.local.json
 │   └── settings.local.json            # gitignored, created locally
-├── .agents/skills                     # symlink to .claude/skills (for other agents)
 ├── .github/workflows/e2e.yml          # CI for e2e-tests/
 ├── context/                           # this project's OK knowledge base
 │   ├── navigation-map.md
 │   └── regression-flows.md
 ├── e2e-tests/                         # Playwright Test suite (run with npm ci && npm test)
 ├── evidence/                          # gitignored — screenshots and reports
-├── AGENTS.md                          # same protocol as CLAUDE.md, for Codex
 ├── CLAUDE.md                          # protocol for Claude Code
 ├── GUIDE.md                           # end-to-end setup walkthrough
 └── README.md
