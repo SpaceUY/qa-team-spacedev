@@ -3,6 +3,7 @@
 **Fecha:** 2026-10-15
 **Branch:** `feature/qa-agent-v2`
 **Estado:** exploración cerrada. El saneamiento (subproyecto 1) está hecho; el resto está pendiente de spec.
+**Ver también:** [registro de decisiones](decisions.md) · [cambios respecto a la v1](changes-from-v1.md)
 
 ---
 
