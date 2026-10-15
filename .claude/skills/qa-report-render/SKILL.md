@@ -7,7 +7,7 @@ description: >-
   bug cards, badges and layout, and the rule that the page must open with no
   network. Composed by the QA test skills at the end of a run, after the markdown
   report is written.
-user-invocable: false
+user-invocable: true
 allowed-tools: Read, Write
 ---
 
@@ -18,7 +18,7 @@ allowed-tools: Read, Write
 - **Prerequisites:** a finished `qa-report.md` (written by `qa-report-test-execution`). No network, no browser, no external template file. This skill is the specification of the page.
 - **Input:** the path to `qa-report.md`, and its folder (the screenshots are relative to it).
 - **Output:** `qa-report.html` in the same folder as `qa-report.md`, for example `evidence/{hostname}/{subpath}/{YYYY-MM-DD}/qa-report.html`. Screenshots stay where they are and are referenced by relative path.
-- **Invocation:** not user-typed. Called by `qa-report-test-execution` as its last step, so every QA test skill and agent gets it.
+- **Invocation:** called by `qa-report-test-execution` as its last step, so every QA test skill and agent gets it. Can also be run by hand to (re-)render an existing report: `/qa-report-render <path/to/qa-report.md>`.
 
 Every QA run produces two artifacts: the markdown report, which is the record, and the HTML report, which is what people actually open. This skill owns the second.
 

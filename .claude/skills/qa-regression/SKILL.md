@@ -228,16 +228,12 @@ the user to the report file(s) and summary written in Step 5.
 
 ## Generating HTML Reports (Optional)
 
-This skill writes markdown reports (`qa-report.md` per flow and `AUDIT-SUMMARY-*.md`). For formatted HTML versions, run the `qa-report-test-execution` skill on each report:
+This skill writes markdown reports (`qa-report.md` per flow and `AUDIT-SUMMARY-*.md`). For formatted HTML versions, run the `qa-report-render` skill on each report:
 
 ```bash
-# Single report
-/qa-report-test-execution evidence/{hostname}/{flow}/{YYYY-MM-DD}/qa-report.md
-
-# All reports for a host
-for report in evidence/{hostname}/*/*/qa-report.md; do
-  /qa-report-test-execution "$report"
-done
+/qa-report-render evidence/{hostname}/{flow}/{YYYY-MM-DD}/qa-report.md
 ```
 
-The HTML is written next to each markdown report and works offline. Rendering is separate from testing, so you can regenerate HTML without re-running the tests. See `.claude/skills/qa-report-test-execution/README.md`.
+A slash command cannot run inside a shell loop. To render every report for a host, ask Claude to run `qa-report-render` on each `qa-report.md` under `evidence/{hostname}/`.
+
+The HTML is written next to each markdown report and works offline. Rendering is separate from testing, so you can regenerate HTML without re-running the tests. See `.claude/skills/qa-report-render/SKILL.md`.

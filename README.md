@@ -247,7 +247,7 @@ qa-team/
 │   │   ├── qa-ad-hoc/
 │   │   ├── qa-evidence-discipline/    # shared rules, composed by the QA skills
 │   │   ├── qa-report-test-execution/  # internal: writes qa-report.md
-│   │   ├── qa-report-render/          # internal: renders the HTML report
+│   │   ├── qa-report-render/          # renders the HTML report (also /qa-report-render <path>)
 │   │   ├── report-bugs-to-clickup/
 │   │   └── report-improvements-to-clickup/
 │   ├── settings.local.json.example    # copy to settings.local.json

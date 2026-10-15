@@ -286,8 +286,8 @@ If the same flow is tested more than once on the same day, screenshots are numbe
 | `qa-smoke-test` | Focused smoke test scoped to one ClickUp ticket's feature | **Manual only** — invoke explicitly with `/qa-smoke-test <ticket>` |
 | `qa-regression` | End-to-end execution of every documented core regression flow | **Manual only** — invoke explicitly with `/qa-regression` |
 | Playwright MCP (`mcp__playwright__*`) | Navigation, interaction, screenshots, DOM inspection | Required for all of the above |
-| `qa-report-test-execution` | Renders a `qa-report.md` into a self-contained HTML report | **Manual only** — `/qa-report-test-execution <path/to/qa-report.md>` |
-| `qa-report-render` | Shared rendering rules used by the HTML report skill | Invoked by `qa-report-test-execution` |
+| `qa-report-test-execution` | Writes `qa-report.md` from a run's raw results, then hands off to `qa-report-render` | Internal — invoked by the QA test skills and agents |
+| `qa-report-render` | Renders a `qa-report.md` into a self-contained HTML report | Invoked by `qa-report-test-execution`; also manual — `/qa-report-render <path/to/qa-report.md>` |
 | `qa-evidence-discipline` | Rules for what counts as evidence and how it is recorded | Composed by the QA skills |
 | `qa-platform-discovery` | Maps which platforms, viewports and roles a site exposes before testing | **Manual only** — `/qa-platform-discovery` |
 | `qa-app-regression` | Scoped UI regression across a whole app, flow by flow | **Manual only** — `/qa-app-regression` |
