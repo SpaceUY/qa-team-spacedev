@@ -8,7 +8,7 @@ description: >-
   endpoint, not only ones a suite covers, through a transport ladder that keeps
   the credential out of the transcript, applies the qa-api-regression techniques
   to exactly the thing named, and sizes its output to the run. Not a sweep (that
-  is qa-api-regression) and not a scripted suite (that is /qa-regression).
+  is qa-api-regression) and not a scripted suite (that is the qa-e2e-runner agent).
 user-invocable: false
 allowed-tools: Read, Write, AskUserQuestion, Bash
 ---
@@ -29,7 +29,7 @@ allowed-tools: Read, Write, AskUserQuestion, Bash
 
 **One named endpoint or behaviour, as one named account, and nothing either side of it, on any endpoint.**
 
-This is the **fallback** mode of `qa-api-tester`. A sweep of the whole API is `qa-api-regression`. A scripted suite is `/qa-regression`. Everything else lands here, which makes this the mode most small checks are actually in.
+This is the **fallback** mode of `qa-api-tester`. A sweep of the whole API is `qa-api-regression`. A scripted suite is the `qa-e2e-runner` agent. Everything else lands here, which makes this the mode most small checks are actually in.
 
 **So say which mode you are in before the first request.** One line is enough: the mode, the endpoint or behaviour, the version, the account variable name, and the base URL. A user who meant a sweep gets to correct you before the run is spent.
 

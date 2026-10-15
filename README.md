@@ -234,7 +234,7 @@ skills share.
 ```
 qa-team/
 ├── .claude/
-│   ├── agents/                        # Claude Code subagents (API, UI, regression)
+│   ├── agents/                        # Claude Code subagents (qa-api-tester, qa-ui-tester, qa-e2e-runner)
 │   ├── skills/                        # single source of truth for all skills
 │   │   ├── qa-blackbox/               # exploratory audit (auto-triggered by URL + flow)
 │   │   ├── qa-text-check/
