@@ -53,7 +53,7 @@ When the user provides **a URL and a flow to test** (e.g. "navigate to http://â€
 > The Playwright MCP server (`mcp__playwright__*`) is required for all QA sessions and is not available in this session.
 >
 > To fix this:
-> 1. Verify that `.claude/settings.local.json` contains the `mcpServers.playwright` entry.
+> 1. Verify that `.mcp.json` at the repo root contains the `mcpServers.playwright` entry, and that you approved it (`claude mcp list` shows it as connected, not "Pending approval").
 > 2. Run `/mcp` in Claude Code to reconnect MCP servers.
 > 3. If the problem persists, restart the Claude Code session.
 >

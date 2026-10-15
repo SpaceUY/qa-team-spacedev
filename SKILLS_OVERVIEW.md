@@ -126,12 +126,14 @@ TEST_USER_PASSWORD='password123'
 CLICKUP_API_KEY='pk_...'           (solo si usas ClickUp)
 ```
 
-### `.claude/settings.local.json` (copia de `settings.local.json.example`)
+### `.mcp.json` (commiteado) y `.claude/settings.local.json` (copia de `settings.local.json.example`)
+
+El servidor Playwright MCP está definido en `.mcp.json`, con versión fija. El
+`settings.local.json` solo lo pre-aprueba y da los permisos básicos:
+
 ```json
 {
-  "mcpServers": {
-    "playwright": { ... }  // para navegación del navegador
-  }
+  "enabledMcpjsonServers": ["playwright"]
 }
 ```
 

@@ -28,7 +28,7 @@ files executed by a CLI).
 
 ```bash
 npx playwright install chromium   # one-time
-cp .claude/settings.local.json.example .claude/settings.local.json
+cp .claude/settings.local.json.example .claude/settings.local.json   # pre-approves the Playwright MCP from .mcp.json
 cp .env.example .env   # then fill in BASE_URL, test credentials, and ClickUp settings (keep all values single-quoted — see GUIDE.md)
 claude
 ```
@@ -252,6 +252,7 @@ qa-team/
 │   │   └── report-improvements-to-clickup/
 │   ├── settings.local.json.example    # copy to settings.local.json
 │   └── settings.local.json            # gitignored, created locally
+├── .mcp.json                          # Playwright MCP server (pinned version)
 ├── .github/workflows/e2e.yml          # CI for e2e-tests/
 ├── context/                           # this project's OK knowledge base
 │   ├── navigation-map.md
@@ -273,12 +274,14 @@ not connected:
 > QA session halted — Playwright MCP is not connected.
 
 Fix checklist:
-1. Verify `.claude/settings.local.json` exists and contains the
-   `mcpServers.playwright` entry (copy it from `.example` if missing).
+1. Run `claude mcp list`. `playwright` (defined in `.mcp.json`) must
+   show as connected. If it shows "Pending approval", approve it at the
+   next `claude` start, or copy `.claude/settings.local.json.example`
+   to `.claude/settings.local.json`, which pre-approves it.
 2. Run `/mcp` inside Claude Code to reconnect MCP servers without
    restarting.
-3. Confirm `npx @playwright/mcp@latest` runs without errors in your
-   terminal.
+3. Confirm `npx @playwright/mcp@0.0.83` (the version pinned in
+   `.mcp.json`) runs without errors in your terminal.
 4. If nothing works, close and reopen Claude Code.
 
 Do **not** attempt to work around a missing Playwright MCP by writing

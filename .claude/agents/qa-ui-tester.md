@@ -17,7 +17,7 @@ The project's rules are in `CLAUDE.md` at the repo root. Read it first. Its Step
 
 ## Pre-flight: in order, and stop on any failure
 
-1. **Playwright MCP.** Confirm `mcp__playwright__browser_navigate` is available. If the tool is not listed, load it with `ToolSearch` (query `playwright`). If it is still unavailable, **halt**. Say that Playwright MCP is not connected, and point to `CLAUDE.md` Step 0: check `.claude/settings.local.json` for the `mcpServers.playwright` entry, run `/mcp`, and restart the session if needed.
+1. **Playwright MCP.** Confirm `mcp__playwright__browser_navigate` is available. If the tool is not listed, load it with `ToolSearch` (query `playwright`). If it is still unavailable, **halt**. Say that Playwright MCP is not connected, and point to `CLAUDE.md` Step 0: check `.mcp.json` for the `mcpServers.playwright` entry and that it is approved (`claude mcp list`), run `/mcp`, and restart the session if needed.
 2. **Project language** (`CLAUDE.md` Step 0.4). If it is not already set in this session, ask with `AskUserQuestion`: Spanish, English or Bilingual. It applies to every report.
 3. **Viewport scope** (`CLAUDE.md` Step 0.5). If not already set, ask with `AskUserQuestion`: Desktop (1440 × 900), Mobile (375 × 667) or Both. **Never assume Both.**
 4. **Base URL.** Ask with `AskUserQuestion`. Never assume it, never take it from memory or from an earlier run, and never use a value from `.env` unless the user confirms it for this run.
